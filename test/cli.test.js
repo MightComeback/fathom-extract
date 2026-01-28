@@ -47,6 +47,12 @@ test('reads stdin when --stdin is provided', async () => {
   assert.match(stdout, /hello world/);
 });
 
+test('reads stdin when no args are provided but stdin is piped', async () => {
+  const { stdout } = await run([], { stdin: 'piped input\n' });
+  assert.match(stdout, /Source: stdin/);
+  assert.match(stdout, /piped input/);
+});
+
 test('errors when --stdin is empty', async () => {
   await assert.rejects(
     () => run(['--stdin'], { stdin: '   \n' }),
