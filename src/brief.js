@@ -8,12 +8,31 @@ function oneLine(s) {
     .trim();
 }
 
+function stripLeadingTimestamp(s) {
+  // Only strip when it appears at the start of the line.
+  // Examples:
+  //  - 00:12 Hello
+  //  - 1:02:03 Something
+  //  - [00:12] Hello
+  //  - (00:12) Hello
+  return String(s || '')
+    .replace(
+      /^(?:\[\s*|\(\s*)?(?:\d{1,2}:)?\d{1,2}:\d{2}(?:\s*(?:\]|\))\s*)?\s*/,
+      ''
+    )
+    .trim();
+}
+
 function normalizeBullets(lines, { max = 6 } = {}) {
   const out = [];
   for (const raw of String(lines || '').split(/\r?\n/)) {
     const line = raw.trim();
     if (!line) continue;
-    out.push(`- ${line.replace(/^[-*]\s+/, '')}`);
+
+    const cleaned = stripLeadingTimestamp(line.replace(/^[-*]\s+/, ''));
+    if (!cleaned) continue;
+
+    out.push(`- ${cleaned}`);
     if (out.length >= max) break;
   }
   return out;
