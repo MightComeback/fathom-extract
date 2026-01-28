@@ -68,6 +68,13 @@ test('extracts og:title when <title> is missing', async () => {
   assert.match(stdout, /- OG Demo & Title/);
 });
 
+test('decodes numeric HTML entities in extracted title', async () => {
+  const html = '<html><head><title>Ivan&#39;s &#x2019;Demo&#8217;</title></head><body><p>Hi</p></body></html>';
+  const url = `data:text/html,${encodeURIComponent(html)}`;
+  const { stdout } = await run([url]);
+  assert.match(stdout, /- Ivan's ’Demo’/);
+});
+
 test('reads stdin when --stdin is provided', async () => {
   const { stdout } = await run(['--stdin'], { stdin: 'hello world\n' });
   assert.match(stdout, /Source: stdin/);
