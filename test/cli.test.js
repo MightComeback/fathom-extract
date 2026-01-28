@@ -14,9 +14,9 @@ const binPath = path.resolve(__dirname, '..', 'bin', 'fathom2action.js');
 const extractBinPath = path.resolve(__dirname, '..', 'bin', 'fathom2action-extract.js');
 const transformBinPath = path.resolve(__dirname, '..', 'bin', 'fathom2action-transform.js');
 
-function runBin(bin, args, { stdin, timeoutMs = 30_000 } = {}) {
+function runBin(bin, args, { stdin, timeoutMs = 30_000, env = null } = {}) {
   return new Promise((resolve, reject) => {
-    const child = execFile(process.execPath, [bin, ...args], { timeout: timeoutMs }, (err, stdout, stderr) => {
+    const child = execFile(process.execPath, [bin, ...args], { timeout: timeoutMs, env: env ? { ...process.env, ...env } : process.env }, (err, stdout, stderr) => {
       if (err) {
         err.stdout = stdout;
         err.stderr = stderr;
@@ -212,6 +212,34 @@ test('extract tool includes a mediaUrl field when og:video is present (without d
   const obj = JSON.parse(stdout);
   assert.equal(obj.ok, true);
   assert.equal(obj.mediaUrl, 'https://cdn.example.com/video.mp4');
+});
+
+
+test('supports FATHOM_COOKIE_FILE env var for auth-gated links', async () => {
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'fathom-cookie-'));
+  const cookiePath = path.join(tmp, 'cookie.txt');
+  fs.writeFileSync(cookiePath, 'session=abc123', 'utf8');
+
+  const srv = await withServer((req, res) => {
+    const cookie = String(req.headers.cookie || '');
+    if (!cookie.includes('session=abc123')) {
+      res.writeHead(403, { 'content-type': 'text/plain' });
+      res.end('forbidden');
+      return;
+    }
+    res.writeHead(200, { 'content-type': 'text/html' });
+    res.end('<html><head><title>Cookie OK</title></head><body><h1>Transcript</h1><p>00:01 Hello</p></body></html>');
+  });
+
+  try {
+    const { stdout } = await runExtract([srv.url], { env: { FATHOM_COOKIE_FILE: cookiePath } });
+    const obj = JSON.parse(stdout);
+    assert.equal(obj.ok, true);
+    assert.match(obj.text, /00:01 Hello/);
+  } finally {
+    await srv.close();
+    fs.rmSync(tmp, { recursive: true, force: true });
+  }
 });
 
 test('extract tool can find a direct media URL from script content when no og:video is present', async () => {
