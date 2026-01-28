@@ -525,26 +525,43 @@ export async function extractFromUrl(
       suggestedTitle: norm.suggestedTitle,
       fetchError: null,
 
-      // Media artifacts (optional)
+      // Artifacts (optional)
       artifactsDir: null,
+      transcriptPath: null,
+      extractedJsonPath: null,
+
+      // Media artifacts (optional)
       mediaPath: null,
       mediaSegments: [],
       segmentSeconds: splitSeconds,
       mediaDownloadError: null,
     };
 
-    // Optional: if we have a mediaUrl, download as an mp4 and split into N-second chunks.
-    if (downloadMedia && base.mediaUrl) {
+    // If the caller asked for an output dir, always produce file artifacts (transcript + extracted.json),
+    // even when media download is disabled or mediaUrl is missing.
+    const wantsArtifacts = Boolean(outDir || mediaOutPath || (downloadMedia && base.mediaUrl));
+
+    if (wantsArtifacts) {
       const artifactsDir = mediaOutPath
         ? path.dirname(path.resolve(mediaOutPath))
         : outDir
           ? path.resolve(outDir)
           : defaultArtifactsDir({ title: base.title || base.suggestedTitle });
 
-      const videoPath = mediaOutPath ? path.resolve(mediaOutPath) : path.join(artifactsDir, 'video.mp4');
-      const segmentsDir = path.join(artifactsDir, 'segments');
-
       base.artifactsDir = artifactsDir;
+      fs.mkdirSync(artifactsDir, { recursive: true });
+
+      base.transcriptPath = path.join(artifactsDir, 'transcript.txt');
+      fs.writeFileSync(base.transcriptPath, base.text + '\n', 'utf8');
+
+      base.extractedJsonPath = path.join(artifactsDir, 'extracted.json');
+      // We'll fill this at the end once media fields are finalized.
+    }
+
+    // Optional: if we have a mediaUrl, download as an mp4 and split into N-second chunks.
+    if (downloadMedia && base.mediaUrl && base.artifactsDir) {
+      const videoPath = mediaOutPath ? path.resolve(mediaOutPath) : path.join(base.artifactsDir, 'video.mp4');
+      const segmentsDir = path.join(base.artifactsDir, 'segments');
 
       try {
         await downloadMediaWithFfmpeg({ mediaUrl: base.mediaUrl, outPath: videoPath, cookie });
@@ -562,6 +579,14 @@ export async function extractFromUrl(
       }
     }
 
+    if (base.extractedJsonPath) {
+      try {
+        fs.writeFileSync(base.extractedJsonPath, JSON.stringify(base, null, 2) + '\n', 'utf8');
+      } catch {
+        // Non-fatal: still return JSON to stdout.
+      }
+    }
+
     return base;
   }
 
@@ -574,6 +599,8 @@ export async function extractFromUrl(
     suggestedTitle: '',
     fetchError: fetched.error,
     artifactsDir: null,
+    transcriptPath: null,
+    extractedJsonPath: null,
     mediaPath: null,
     mediaSegments: [],
     segmentSeconds: splitSeconds,
@@ -597,6 +624,8 @@ export function extractFromStdin({ content, source }) {
     suggestedTitle: '',
     fetchError: null,
     artifactsDir: null,
+    transcriptPath: null,
+    extractedJsonPath: null,
     mediaPath: null,
     mediaSegments: [],
     segmentSeconds: 0,
