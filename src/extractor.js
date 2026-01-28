@@ -861,9 +861,9 @@ async function fetchTranscriptViaCopyEndpoint(copyTranscriptUrl, { cookie = null
 
 export async function extractFromUrl(
   url,
-  { downloadMedia = false, splitSeconds = 300, outDir = null, cookie = null, mediaOutPath = null } = {}
+  { downloadMedia = false, splitSeconds = 300, outDir = null, cookie = null, referer = null, mediaOutPath = null } = {}
 ) {
-  const fetched = await fetchUrlText(url, { cookie });
+  const fetched = await fetchUrlText(url, { cookie, referer });
   if (fetched.ok) {
     const norm = normalizeFetchedContent(fetched.text, url);
 
@@ -872,11 +872,11 @@ export async function extractFromUrl(
     const copyTranscriptUrl = extractCopyTranscriptUrlFromHtml(fetched.text, url);
     const hasTimestamps = /\b\d{1,2}:\d{2}(?::\d{2})?\b/.test(String(transcriptText || ''));
     if ((!transcriptText || transcriptText.length < 300 || !hasTimestamps) && copyTranscriptUrl) {
-      const viaCopy = await fetchTranscriptViaCopyEndpoint(copyTranscriptUrl, { cookie, referer: url });
+      const viaCopy = await fetchTranscriptViaCopyEndpoint(copyTranscriptUrl, { cookie, referer: referer || url });
       if (viaCopy) transcriptText = viaCopy;
     }
 
-    const resolvedMediaUrl = await resolveMediaUrl(norm.mediaUrl || '', { cookie, referer: url, maxDepth: 3 });
+    const resolvedMediaUrl = await resolveMediaUrl(norm.mediaUrl || '', { cookie, referer: referer || url, maxDepth: 3 });
 
     const base = {
       ok: true,
@@ -933,7 +933,7 @@ export async function extractFromUrl(
       base.mediaSegmentsDir = segmentsDir;
 
       try {
-        await downloadMediaWithFfmpeg({ mediaUrl: base.mediaUrl, outPath: videoPath, cookie, referer: url });
+        await downloadMediaWithFfmpeg({ mediaUrl: base.mediaUrl, outPath: videoPath, cookie, referer: referer || url });
         base.mediaPath = videoPath;
 
         if (splitSeconds && Number.isFinite(splitSeconds) && splitSeconds > 0) {

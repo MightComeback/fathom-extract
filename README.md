@@ -111,6 +111,7 @@ fathom-extract "https://fathom.video/share/<TOKEN>" --cookie-file ./cookie.txt -
 ## CLI flags (extractor)
 - `--out-dir <dir>`: write `transcript.txt` + `extracted.json` + media artifacts
 - `--cookie <cookie>` / `--cookie-file <path>`
+- `--referer <url>`: set an explicit `Referer` header (some auth flows/CDNs require this)
 - `--split-seconds <n>` / `FATHOM_SPLIT_SECONDS=<n>`
 - `--no-download` (skip video download)
 - `--no-split` (download video but don’t split)
