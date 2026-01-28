@@ -42,7 +42,7 @@ fathom-extract "https://fathom.video/share/<TOKEN>" \
 
 Outputs in `./artifacts/`:
 - `transcript.txt`
-- `extracted.json`
+- `extracted.json` (includes `mediaSegmentsDir` + `mediaSegments`)
 - `video.mp4`
 - `segments/segment_000.mp4`, `segment_001.mp4`, ...
 

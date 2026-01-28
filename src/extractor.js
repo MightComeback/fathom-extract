@@ -851,6 +851,7 @@ export async function extractFromUrl(
 
       // Media artifacts (optional)
       mediaPath: null,
+      mediaSegmentsDir: null,
       mediaSegments: [],
       segmentSeconds: splitSeconds,
       mediaDownloadError: null,
@@ -886,6 +887,7 @@ export async function extractFromUrl(
     if (downloadMedia && base.mediaUrl && base.artifactsDir) {
       const videoPath = mediaOutPath ? path.resolve(mediaOutPath) : path.join(base.artifactsDir, 'video.mp4');
       const segmentsDir = path.join(base.artifactsDir, 'segments');
+      base.mediaSegmentsDir = segmentsDir;
 
       try {
         await downloadMediaWithFfmpeg({ mediaUrl: base.mediaUrl, outPath: videoPath, cookie, referer: url });
@@ -926,6 +928,7 @@ export async function extractFromUrl(
     transcriptPath: null,
     extractedJsonPath: null,
     mediaPath: null,
+    mediaSegmentsDir: null,
     mediaSegments: [],
     segmentSeconds: splitSeconds,
     mediaDownloadError: null,
