@@ -5,7 +5,7 @@ export function mkBrief({ source, content, mediaUrl, fetchError, suggestedTitle,
   lines.push('');
   if (source) lines.push(`Source: ${source}`);
   if (mediaUrl) lines.push(`Video: ${mediaUrl}`);
-  if (fetchError) lines.push(`Fetch: failed (${fetchError}) — paste transcript/notes via \`fathom2action --stdin\``);
+  if (fetchError) lines.push(`Fetch: failed (${fetchError}) — paste transcript/notes via \`fathom-transform --stdin\``);
   lines.push('');
   lines.push('## Suggested issue title (optional)');
   lines.push('');

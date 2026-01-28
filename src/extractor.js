@@ -597,7 +597,7 @@ export async function extractFromUrl(
   return {
     ok: false,
     source: url,
-    text: 'Unable to fetch this link (likely auth/cookies). Paste transcript/notes here, or run: fathom2action --stdin',
+    text: 'Unable to fetch this link (likely auth/cookies). Paste transcript/notes here, or run: fathom-transform --stdin',
     mediaUrl: '',
     title: '',
     suggestedTitle: '',
