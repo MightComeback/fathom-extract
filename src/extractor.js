@@ -24,12 +24,25 @@ export function getVersion() {
 }
 
 function decodeHtmlEntities(s) {
-  return String(s)
+  let out = String(s)
     .replaceAll('&amp;', '&')
     .replaceAll('&lt;', '<')
     .replaceAll('&gt;', '>')
     .replaceAll('&quot;', '"')
     .replaceAll('&#39;', "'");
+
+  // Best-effort numeric entities.
+  // Examples: &#8217; (’) and &#x2019; (’)
+  out = out.replaceAll(/&#(\d+);/g, (_, n) => {
+    const cp = Number(n);
+    return Number.isFinite(cp) ? String.fromCodePoint(cp) : _;
+  });
+  out = out.replaceAll(/&#x([0-9a-fA-F]+);/g, (_, hex) => {
+    const cp = parseInt(hex, 16);
+    return Number.isFinite(cp) ? String.fromCodePoint(cp) : _;
+  });
+
+  return out;
 }
 
 function extractMetaContent(html, { name, property }) {
