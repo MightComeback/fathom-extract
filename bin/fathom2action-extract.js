@@ -28,7 +28,7 @@ Output:
 Notes:
   - Default (URL mode): if mediaUrl is found, it will download a local mp4 and split into 5-minute segments (300s).
   - If --out-dir is set, the extractor will also write transcript.txt + extracted.json for easy piping to other tools.
-  - For auth-gated links, pass a Cookie header via FATHOM_COOKIE or --cookie-file.
+  - For auth-gated links, pass a Cookie header via FATHOM_COOKIE, or a cookie file via FATHOM_COOKIE_FILE/--cookie-file.
   - --download-media <path> is a convenience alias that sets the downloaded mp4 output path.
 `);
   process.exit(code);
@@ -53,6 +53,10 @@ function popFlag(args, flag) {
 
 function loadCookie({ cookieFile } = {}) {
   let c = process.env.FATHOM_COOKIE ? String(process.env.FATHOM_COOKIE) : '';
+
+  // Convenience: allow env var to point at a cookie file.
+  if (!cookieFile && process.env.FATHOM_COOKIE_FILE) cookieFile = String(process.env.FATHOM_COOKIE_FILE);
+
   if (cookieFile) {
     try {
       c = fs.readFileSync(cookieFile, 'utf8');
