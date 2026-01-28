@@ -23,10 +23,11 @@ Usage:
 
 Output:
   Prints JSON with transcript + media artifacts (best-effort):
-    { ok, source, text, title, suggestedTitle, mediaUrl, artifactsDir, mediaPath, mediaSegments, segmentSeconds, fetchError, mediaDownloadError }
+    { ok, source, text, title, suggestedTitle, mediaUrl, artifactsDir, transcriptPath, extractedJsonPath, mediaPath, mediaSegments, segmentSeconds, fetchError, mediaDownloadError }
 
 Notes:
   - Default (URL mode): if mediaUrl is found, it will download a local mp4 and split into 5-minute segments (300s).
+  - If --out-dir is set, the extractor will also write transcript.txt + extracted.json for easy piping to other tools.
   - For auth-gated links, pass a Cookie header via FATHOM_COOKIE or --cookie-file.
   - --download-media <path> is a convenience alias that sets the downloaded mp4 output path.
 `);

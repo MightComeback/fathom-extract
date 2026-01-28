@@ -214,6 +214,30 @@ test('extract tool includes a mediaUrl field when og:video is present (without d
   assert.equal(obj.mediaUrl, 'https://cdn.example.com/video.mp4');
 });
 
+test('extract tool writes transcript.txt + extracted.json when --out-dir is provided (even with --no-download)', async () => {
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'fathom2action-test-'));
+  const outDir = path.join(tmp, 'out');
+
+  const html = '<html><head><title>Demo</title></head><body><p>Hello transcript</p></body></html>';
+  const url = `data:text/html,${encodeURIComponent(html)}`;
+
+  const { stdout } = await runExtract([url, '--out-dir', outDir, '--no-download', '--pretty']);
+  const obj = JSON.parse(stdout);
+  assert.equal(obj.ok, true);
+  assert.equal(obj.artifactsDir, outDir);
+  assert.ok(obj.transcriptPath);
+  assert.ok(obj.extractedJsonPath);
+  assert.ok(fs.existsSync(obj.transcriptPath));
+  assert.ok(fs.existsSync(obj.extractedJsonPath));
+
+  const transcript = fs.readFileSync(obj.transcriptPath, 'utf8');
+  assert.match(transcript, /Hello transcript/);
+
+  const meta = JSON.parse(fs.readFileSync(obj.extractedJsonPath, 'utf8'));
+  assert.equal(meta.ok, true);
+  assert.equal(meta.artifactsDir, outDir);
+});
+
 test('extract tool can download + split media into segments (local server)', async () => {
   const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'fathom2action-test-'));
   const srcVideo = path.join(tmp, 'src.mp4');
