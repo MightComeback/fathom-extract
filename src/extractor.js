@@ -799,7 +799,7 @@ export async function extractFromUrl(
 
     // Optional: if we have a mediaUrl, download as an mp4 and split into N-second chunks.
     // If we *wanted* to download but couldn't find a mediaUrl, surface that clearly.
-    if (downloadMedia && !base.mediaUrl && base.artifactsDir) {
+    if (downloadMedia && !base.mediaUrl) {
       base.mediaDownloadError = 'mediaUrl not found on share page (auth-gated pages may require FATHOM_COOKIE/--cookie-file)';
     }
 
@@ -837,7 +837,7 @@ export async function extractFromUrl(
   const base = {
     ok: false,
     source: url,
-    text: 'Unable to fetch this link (likely auth/cookies). Paste transcript/notes here, or run: fathom-transform --stdin',
+    text: 'Unable to fetch this link (likely auth/cookies). If you already have transcript/notes, pipe them into: fathom-extract --stdin',
     mediaUrl: '',
     title: '',
     suggestedTitle: '',
