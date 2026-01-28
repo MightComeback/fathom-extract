@@ -103,10 +103,21 @@ function extractVideoUrlFromHtml(html) {
   const jsonKeyMatch = s.match(/"(?:contentUrl|embedUrl|url)"\s*:\s*"(https?:\\\/\\\/[^\"<>]+\.(?:m3u8|mp4|mov|m4v|webm)(?:\?[^\"<>]*)?)"/i);
   if (jsonKeyMatch) return decodeHtmlEntities(jsonKeyMatch[1]).trim().replaceAll('\\/', '/');
 
-  // Last-resort: scan for a direct media URL embedded in scripts (common on share pages).
-  // We keep this conservative: only absolute http(s) URLs ending in a media-ish extension.
-  const mediaMatch = s.match(/https?:\/\/[^\s"'<>]+\.(?:m3u8|mp4|mov|m4v|webm)(?:\?[^\s"'<>]*)?/i);
-  if (mediaMatch) return decodeHtmlEntities(mediaMatch[0]).trim();
+  // Last-resort: scan for direct media URLs embedded in scripts (common on share/call pages).
+  // Use a URL-ish matcher that *excludes backslashes* so we don't accidentally slurp JSON-escaped blobs.
+  // Also handle JSON-escaped slashes like https:\/\/... by normalizing them before scanning.
+  const scan = s.replaceAll('\\/', '/');
+
+  const urlish = Array.from(
+    scan.matchAll(/https?:\/\/[A-Za-z0-9._~:/?#\[\]@!$&'()*+,;=%-]+/gi)
+  ).map((m) => m[0]);
+
+  const mediaCandidates = urlish
+    .map((u) => decodeHtmlEntities(u).trim())
+    .map((u) => u.replace(/[)\]>'\"]+$/g, ''))
+    .filter((u) => /\.(?:m3u8|mp4|mov|m4v|webm)(?:\?|$)/i.test(u));
+
+  if (mediaCandidates.length) return mediaCandidates[mediaCandidates.length - 1];
 
   return '';
 }
@@ -777,6 +788,11 @@ export async function extractFromUrl(
     }
 
     // Optional: if we have a mediaUrl, download as an mp4 and split into N-second chunks.
+    // If we *wanted* to download but couldn't find a mediaUrl, surface that clearly.
+    if (downloadMedia && !base.mediaUrl && base.artifactsDir) {
+      base.mediaDownloadError = 'mediaUrl not found on share page (auth-gated pages may require FATHOM_COOKIE/--cookie-file)';
+    }
+
     if (downloadMedia && base.mediaUrl && base.artifactsDir) {
       const videoPath = mediaOutPath ? path.resolve(mediaOutPath) : path.join(base.artifactsDir, 'video.mp4');
       const segmentsDir = path.join(base.artifactsDir, 'segments');
