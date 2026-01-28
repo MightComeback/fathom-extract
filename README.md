@@ -1,157 +1,68 @@
-# fathom2action
+# fathom-extract (repo currently named `fathom2action`)
 
-Turn a Fathom recording/link into an **engineering-actionable bug brief** (so you don’t watch the whole video).
+Single-purpose micro-tool:
 
-## Install
+- Input: a Fathom share/call URL (optionally with auth cookies)
+- Output: **transcript + media URL**, and (when possible) a downloaded **video.mp4** split into ~5-minute segments (Gemini-ready).
 
-```bash
-npm i -g fathom2action
-```
+## Important: not published to npm
+
+This is a private/internal CLI repo. It is **not** published to npm.
+
+You can run it from the repo, or `npm link` locally if you want the `fathom-extract` command on your PATH.
 
 ## Usage
 
-Preferred workflow (micro-tools):
+### Extract transcript + video + 5-minute segments (recommended)
 
 ```bash
-# URL → JSON artifacts → markdown bug brief
-fathom-extract "https://..." --pretty | fathom-transform --json > bug.md
-
-# Or: paste transcript/notes → markdown bug brief
-pbpaste | fathom-transform --stdin --source "notes" > bug.md
+# cookie file → transcript + video.mp4 + 5-min segments
+FATHOM_COOKIE_FILE=./cookie.txt \
+  fathom-extract "https://fathom.video/share/..." \
+  --out-dir ./artifacts \
+  --pretty
 ```
 
-Shortcut/legacy wrapper:
+Artifacts written under `--out-dir`:
+- `transcript.txt`
+- `extracted.json`
+- `video.mp4` (if media is downloadable)
+- `segments/segment_000.mp4`, `segment_001.mp4`, ...
+
+### Transcript-only (skip video download)
 
 ```bash
-# One-step wrapper (kept for backward compatibility)
-fathom2action "https://..."
-
-# Wrapper from stdin
-pbpaste | fathom2action --stdin > bug.md
+fathom-extract "https://fathom.video/share/..." --no-download --pretty
 ```
 
-## Micro-tools (separation of concerns)
+### Segment size control
 
-This repo intentionally keeps **extraction** and **actionization** separate.
-
-### 1) Extract (URL/stdin → JSON artifacts)
-
-Preferred name: `fathom-extract` (aliases kept for backward-compat).
+Default is 300 seconds. You can set it via env var or CLI:
 
 ```bash
-# URL → JSON artifacts (transcript + mediaUrl)
-# If mediaUrl is present, it will also download a local mp4 and split into 5-min segments by default.
-fathom-extract "https://..." --out-dir ./artifacts --pretty
+export FATHOM_SPLIT_SECONDS=300
 
-# Auth-gated links (Fathom cookies required)
-fathom-extract "https://..." --cookie-file ./cookie.txt --out-dir ./artifacts --pretty
-
-# Transcript-only mode (skip media download)
-fathom-extract "https://..." --no-download --pretty
-
-# stdin → JSON (useful when the link is private/auth-gated)
-pbpaste | fathom-extract --stdin --source "https://..." --pretty
+# or
+fathom-extract "https://..." --split-seconds 300
 ```
 
-#### Auth-gated links (real Fathom recordings): cookies + ffmpeg
+### Cookies (auth-gated pages)
 
-Many real Fathom share links require auth. The extractor supports passing cookies so it can fetch the transcript page and download the underlying media.
-
-Requirements:
-- `ffmpeg` on your PATH (used to download + split the video)
-- a valid Fathom session cookie
-
-Cookie options (any of these work):
+Cookie options:
 - `--cookie "name=value; other=value"`
 - `--cookie-file ./cookie.txt` (supports Netscape cookies.txt, one-per-line `name=value`, and JSON exports)
-- env vars: `FATHOM_COOKIE` or `FATHOM_COOKIE_FILE`
+- env vars: `FATHOM_COOKIE` / `FATHOM_COOKIE_FILE`
 
-```bash
-# Typical: cookie file → transcript + video.mp4 + 5-min segments
-fathom-extract "https://..." --cookie-file ./cookie.txt --out-dir ./artifacts --pretty
+## What this repo does NOT do
 
-# Equivalent via env var
-export FATHOM_COOKIE_FILE=./cookie.txt
-fathom-extract "https://..." --out-dir ./artifacts --pretty
-```
+- No LLM processing.
+- No “bug brief” generation.
 
-#### Gemini ingestion: split video into ~5-minute chunks
+That step belongs in **Aethlon** (Gemini over the extracted video + transcript).
 
-When media is downloadable, the extractor writes:
-- `video.mp4`
-- `segments/segment_000.mp4`, `segments/segment_001.mp4`, …
+## Next
 
-```bash
-# Explicit chunking (default is 300 seconds)
-fathom-extract "https://..." --out-dir ./artifacts --split-seconds 300 --pretty
-
-# Save the mp4 at a specific path
-fathom-extract "https://..." --download-media ./artifacts/video.mp4 --pretty
-```
-
-### 2) Transform (JSON/raw text → markdown bug brief)
-
-Preferred name: `fathom-transform` (aliases kept for backward-compat).
-
-```bash
-# Pipe extractor JSON → transformer markdown
-fathom-extract "https://..." | fathom-transform --json > bug.md
-
-# Or transform raw transcript/notes directly
-pbpaste | fathom-transform --stdin --source "meeting notes" > bug.md
-```
-
-## Output
-Produces markdown with:
-- 1-sentence summary
-- repro steps
-- expected vs actual
-- context/environment
-- timestamps
-- next actions
-
-## Example
-
-```bash
-# Notes/transcript → bug brief
-pbpaste | fathom-transform --stdin --source "meeting notes" > bug.md
-
-# Or: URL → artifacts → bug brief
-fathom-extract "https://..." | fathom-transform --json > bug.md
-```
-
-Example output (truncated):
-
-```md
-# Bug brief
-
-Source: stdin
-
-## Suggested issue title (optional)
-
-- 
-
-## Summary (1 sentence)
-
-- 
-
-## Repro steps
-
-1. 
-
-## Expected vs actual
-
-- Expected: 
-- Actual: 
-
-## Next actions
-
-- [ ] Create Linear/GitHub issue
-- [ ] Assign owner
-- [ ] Add severity + scope
-```
-
-## Roadmap
-- Validate extractor against real, auth-gated Fathom links (cookie flow) and document a known-good setup
-- Optional AI fill-in (OpenAI/other) to generate summary + repro steps
-- One-command: create Linear/GitHub issue
+Once we confirm extraction works on your real Fathom links end-to-end, we’ll integrate it into Aethlon + Canvas:
+- detect Fathom links
+- run `fathom-extract` to produce artifacts
+- feed `segments/*.mp4` (and `transcript.txt`) to Gemini with your specific prompt

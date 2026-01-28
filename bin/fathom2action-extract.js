@@ -142,6 +142,12 @@ async function main() {
 
   let args = process.argv.slice(2);
   if (args.includes('-h') || args.includes('--help')) usage(0);
+  if (args.includes('-v') || args.includes('--version')) {
+    // Keep parity with other CLIs.
+    const { getVersion } = await import('../src/extractor.js');
+    console.log(getVersion());
+    return;
+  }
 
   const prettyFlag = popFlag(args, '--pretty');
   args = prettyFlag.args;

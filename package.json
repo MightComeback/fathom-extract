@@ -1,8 +1,9 @@
 {
-  "name": "fathom2action",
+  "name": "fathom-extract",
+  "private": true,
   "version": "0.1.0",
-  "description": "Turn a Fathom recording/link into an engineering-actionable bug brief (CLI + copy/paste).", 
-  "main": "index.js",
+  "description": "Internal CLI: extract transcript + media from Fathom links; download mp4 and split into segments for Gemini.",
+  "type": "module",
   "scripts": {
     "test": "node --test"
   },
@@ -10,21 +11,8 @@
     "type": "git",
     "url": "git+https://github.com/MightComeback/fathom2action.git"
   },
-  "keywords": [],
-  "author": "",
   "license": "ISC",
-  "type": "module",
-  "bugs": {
-    "url": "https://github.com/MightComeback/fathom2action/issues"
-  },
-  "homepage": "https://github.com/MightComeback/fathom2action#readme",
   "bin": {
-    "fathom2action": "./bin/fathom2action.js",
-
-    "fathom-extract": "./bin/fathom2action-extract.js",
-    "fathom-transform": "./bin/fathom2action-transform.js",
-
-    "fathom2action-extract": "./bin/fathom2action-extract.js",
-    "fathom2action-transform": "./bin/fathom2action-transform.js"
+    "fathom-extract": "./bin/fathom2action-extract.js"
   }
 }
