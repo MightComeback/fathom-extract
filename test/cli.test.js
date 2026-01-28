@@ -421,3 +421,26 @@ test('extract tool can download + split media into segments (local server)', asy
     await srv.close();
   }
 });
+
+test('supports --referer for pages that require a Referer header', async () => {
+  const s = await withServer((req, res) => {
+    const referer = String(req.headers.referer || '');
+    if (!referer.includes('https://fathom.video/')) {
+      res.writeHead(403, { 'content-type': 'text/plain' });
+      res.end('missing referer');
+      return;
+    }
+
+    res.writeHead(200, { 'content-type': 'text/html' });
+    res.end('<html><head><title>Referer OK</title></head><body><p>hello transcript</p></body></html>');
+  });
+
+  try {
+    const { stdout } = await runExtract([`${s.url}/share/abc`, '--referer', 'https://fathom.video/', '--no-download']);
+    const obj = JSON.parse(stdout);
+    assert.equal(obj.ok, true);
+    assert.equal(obj.title, 'Referer OK');
+  } finally {
+    await s.close();
+  }
+});
