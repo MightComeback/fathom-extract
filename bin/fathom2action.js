@@ -12,7 +12,7 @@ function readStdin() {
 }
 
 function usage(code = 0) {
-  console.log(`fathom2action\n\nUsage:\n  fathom2action <fathom-url>\n  fathom2action --stdin\n\nOutput:\n  Prints a markdown bug brief template filled with extracted context (best effort).\n\nNotes:\n  MVP intentionally works even without API keys: if we can't fetch/parse the link, pipe transcript/notes via --stdin.\n`);
+  console.log(`fathom2action\n\nUsage:\n  fathom2action <fathom-url>\n  fathom2action --stdin\n  fathom2action -    # read stdin\n\nTip:\n  If you run without args and stdin is piped, it will automatically read stdin.\n\nOutput:\n  Prints a markdown bug brief template filled with extracted context (best effort).\n\nNotes:\n  MVP intentionally works even without API keys: if we can't fetch/parse the link, pipe transcript/notes via --stdin.\n`);
   process.exit(code);
 }
 
@@ -91,9 +91,24 @@ async function fetchUrlText(url) {
 
 async function main() {
   const args = process.argv.slice(2);
-  if (!args.length || args.includes('-h') || args.includes('--help')) usage(0);
 
-  if (args[0] === '--stdin') {
+  if (args.includes('-h') || args.includes('--help')) usage(0);
+
+  // Convenience: if no args and stdin is piped, treat it like --stdin.
+  if (!args.length) {
+    if (!process.stdin.isTTY) {
+      const content = await readStdin();
+      if (!content.trim()) {
+        console.error('ERR: stdin is empty');
+        process.exit(2);
+      }
+      console.log(mkBrief({ source: 'stdin', content }));
+      return;
+    }
+    usage(0);
+  }
+
+  if (args[0] === '--stdin' || args[0] === '-') {
     const content = await readStdin();
     if (!content.trim()) {
       console.error('ERR: stdin is empty');
