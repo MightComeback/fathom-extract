@@ -634,11 +634,14 @@ function isLikelyMediaFile(url) {
   );
 }
 
-async function probeIsMediaUrl(url, { cookie = null } = {}) {
+async function probeIsMediaUrl(url, { cookie = null, referer = null } = {}) {
   const u = String(url || '').trim();
   if (!u || !/^https?:\/\//i.test(u)) return false;
 
   const headers = {};
+  const ua = `fathom-extract/${getVersion()} (+https://github.com/MightComeback/fathom2action)`;
+  headers['user-agent'] = ua;
+  if (referer) headers.referer = String(referer);
   const c = normalizeCookie(cookie);
   if (c) headers.cookie = c;
 
@@ -671,14 +674,14 @@ async function probeIsMediaUrl(url, { cookie = null } = {}) {
   }
 }
 
-async function resolveMediaUrl(mediaUrl, { cookie = null, maxDepth = 3 } = {}) {
+async function resolveMediaUrl(mediaUrl, { cookie = null, referer = null, maxDepth = 3 } = {}) {
   const start = String(mediaUrl || '').trim();
   if (!start) return '';
   if (isLikelyMediaFile(start)) return start;
 
   // Some providers serve media endpoints without a file extension.
   // Quick probe: if the URL itself returns a video/mpegurl content-type, treat it as the final media URL.
-  if (await probeIsMediaUrl(start, { cookie })) return start;
+  if (await probeIsMediaUrl(start, { cookie, referer })) return start;
 
   if (maxDepth <= 0) return start;
 
@@ -694,7 +697,7 @@ async function resolveMediaUrl(mediaUrl, { cookie = null, maxDepth = 3 } = {}) {
   if (isLikelyMediaFile(next)) return next;
 
   // One more hop (guarded).
-  return resolveMediaUrl(next, { cookie, maxDepth: maxDepth - 1 });
+  return resolveMediaUrl(next, { cookie, referer: start, maxDepth: maxDepth - 1 });
 }
 
 async function splitVideoIntoSegments({ inputPath, segmentsDir, segmentSeconds = 300 } = {}) {
@@ -769,7 +772,7 @@ export async function extractFromUrl(
   const fetched = await fetchUrlText(url, { cookie });
   if (fetched.ok) {
     const norm = normalizeFetchedContent(fetched.text, url);
-    const resolvedMediaUrl = await resolveMediaUrl(norm.mediaUrl || '', { cookie, maxDepth: 3 });
+    const resolvedMediaUrl = await resolveMediaUrl(norm.mediaUrl || '', { cookie, referer: url, maxDepth: 3 });
 
     const base = {
       ok: true,
