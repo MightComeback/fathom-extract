@@ -130,6 +130,6 @@ Source: stdin
 ```
 
 ## Roadmap
-- Fetch/parse transcript from Fathom share pages when accessible
+- Validate extractor against real, auth-gated Fathom links (cookie flow) and document a known-good setup
 - Optional AI fill-in (OpenAI/other) to generate summary + repro steps
 - One-command: create Linear/GitHub issue
