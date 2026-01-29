@@ -34,6 +34,9 @@ node ./bin/fathom2action-extract.js --help
 
 ```bash
 fathom2action "https://fathom.video/share/<TOKEN>"
+
+# (optional) copy the brief directly to your clipboard
+fathom2action "https://fathom.video/share/<TOKEN>" --copy
 ```
 
 If the link is auth-gated (401/403) or otherwise not fetchable, paste transcript/notes:
