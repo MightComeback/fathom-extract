@@ -207,6 +207,11 @@ async function main() {
     const m = out.match(/^<\s*(https?:\/\/[^>\s]+)\s*>$/i);
     if (m) out = m[1];
 
+    // Markdown link wrapper (copy/paste from docs):
+    //   [label](https://...)
+    const md = out.match(/^\s*\[[^\]]*\]\(\s*(https?:\/\/[^)\s]+)\s*\)\s*$/i);
+    if (md) out = md[1];
+
     // Strip common trailing punctuation from copy/paste:
     //   https://...)
     //   https://...,;
