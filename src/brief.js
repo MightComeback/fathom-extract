@@ -288,7 +288,7 @@ export function renderBrief({
     ...(teaserLimit > 0
       ? [
           '## Transcript teaser (first lines)',
-          ...(teaser.length ? teaser : ['- (paste transcript via `fathom2action --stdin` for a better teaser)']),
+          ...(teaser.length ? teaser : [`- (paste transcript via \`${cmdName} --stdin\` for a better teaser)`]),
           '',
         ]
       : []),
