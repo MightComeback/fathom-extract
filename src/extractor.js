@@ -1135,7 +1135,11 @@ export function extractFromStdin({ content, source }) {
       return out;
     }
 
-    const sourcePrefixed = s0.match(/^(?:source|fathom|link|url)\s*:\s*(.+)\s*$/i);
+    // Accept common label prefixes with either a colon or dash separator:
+    //   Source: https://...
+    //   Source - https://...
+    //   Link — https://...
+    const sourcePrefixed = s0.match(/^(?:source|fathom|link|url)\s*(?:[:\-–—])\s*(.+)\s*$/i);
     if (sourcePrefixed) {
       const u = cleanUrl(sourcePrefixed[1]);
       if (/^https?:\/\//i.test(u)) return u;
