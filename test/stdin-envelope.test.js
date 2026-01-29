@@ -137,6 +137,19 @@ test('extractFromStdin treats "Topic:" as a Title alias', () => {
   assert.equal(out.title, 'Login breaks on Safari');
 });
 
+test('extractFromStdin treats "Description:" as a Title alias', () => {
+  const input = [
+    'Source: https://fathom.video/share/abc',
+    'Description: Login breaks on Safari',
+    '00:01 Alice: it crashes',
+  ].join('\n');
+
+  const out = extractFromStdin({ content: input, source: 'stdin' });
+  assert.equal(out.source, 'https://fathom.video/share/abc');
+  assert.equal(out.title, 'Login breaks on Safari');
+  assert.match(out.text, /00:01/);
+});
+
 test('extractFromStdin accepts "Title - ..." style labels (dash separator)', () => {
   const input = [
     'Source: https://fathom.video/share/abc',
