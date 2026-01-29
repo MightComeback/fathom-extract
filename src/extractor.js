@@ -1115,7 +1115,7 @@ export function extractFromStdin({ content, source }) {
     // Strip a single leading quote marker for robustness.
     const s = String(line || '').trim().replace(/^>\s*/, '');
     if (!s) return null;
-    const m = s.match(/^(?:title|subject)\s*(?:[:\-–—])\s*(.+)$/i);
+    const m = s.match(/^(?:title|subject)\s*(?:[:=\-–—])\s*(.+)$/i);
     if (m) return String(m[1] || '').trim();
 
     // Markdown headings are common in copy/paste “envelopes”.
@@ -1190,7 +1190,7 @@ export function extractFromStdin({ content, source }) {
     //   Source: https://...
     //   Source - https://...
     //   Link — https://...
-    const sourcePrefixed = s0.match(/^(?:source|fathom(?:\s*link)?|link|url|recording|video|meeting|call)\s*(?:[:\-–—])\s*(.+)\s*$/i);
+    const sourcePrefixed = s0.match(/^(?:source|fathom(?:\s*link)?|link|url|recording|video|meeting|call)\s*(?:[:=\-–—])\s*(.+)\s*$/i);
     if (sourcePrefixed) {
       const u = cleanUrl(sourcePrefixed[1]);
       if (/^https?:\/\//i.test(u)) return u;
