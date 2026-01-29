@@ -275,7 +275,7 @@ async function main() {
 
       if (e && e.code === 2) {
         process.stderr.write(
-          `ERROR: stdin is empty. Paste a transcript (or a URL + transcript) and try again. Example: \`pbpaste | ${cmdName} --stdin\`\n`
+          `ERROR: stdin is empty. Pipe/paste a transcript (or a URL + transcript) and try again. Example: \`pbpaste | ${cmdName} --stdin\`. If you just want a blank brief, use \`${cmdName} --template\`.\n`
         );
         process.exit(2);
       }
