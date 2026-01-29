@@ -48,6 +48,15 @@ test('brief supports --stdin and prints deterministic sections', async () => {
   assert.match(stdout, /^- Yep/m);
 });
 
+test('brief teaser strips speaker labels with punctuation', async () => {
+  const { stdout } = await runBrief(['--stdin'], {
+    stdin: ['00:01 QA-1: Repro is flaky', "00:02 Ivan K.: Yep", ''].join('\n'),
+  });
+
+  assert.match(stdout, /^- Repro is flaky/m);
+  assert.match(stdout, /^- Yep/m);
+});
+
 test('brief --stdin treats a leading URL line as the Source', async () => {
   const url = 'https://fathom.video/share/abc';
   const { stdout } = await runBrief(['--stdin'], {
