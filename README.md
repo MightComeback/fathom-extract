@@ -166,8 +166,10 @@ fathom-extract "https://fathom.video/share/<TOKEN>" --cookie-file ./cookie.txt -
 
 ## CLI flags (brief generator: `fathom2action`)
 - `--stdin` / `-`: read transcript/notes from stdin (use this when the share link is auth-gated)
-- `--copy`: copy the generated brief to clipboard (best-effort; tries `pbcopy`, `wl-copy`, `xclip`, or `xsel`)
-- `--out <path>`: also write the generated brief to a file (`--out -` means “stdout”)
+- `--copy`: copy the output to clipboard (best-effort; tries `pbcopy`, `wl-copy`, `xclip`, or `xsel`)
+- `--copy-brief`: copy the markdown brief to clipboard (even if `--json` is used)
+- `--out <path>`: also write the output to a file (`--out -` means “stdout”)
+- `--json`: output `{ source, title, brief }` as JSON instead of markdown
 - `--source <url>`: override the `Source` field (handy with `--stdin`)
 - `--title <text>`: override the `Title` field (handy with `--stdin`)
 - `--no-note`: suppress the helpful stderr hint printed when a link can’t be fetched
