@@ -47,6 +47,13 @@ test('brief CLI documents --copy-brief in --help output', async () => {
   assert.match(stdout, /--copy-brief/);
 });
 
+test('brief CLI help mentions chat/markdown URL wrappers', async () => {
+  const { stdout } = await runBrief(['--help']);
+  assert.match(stdout, /paste URLs directly from chat\/markdown/i);
+  assert.match(stdout, /<https:\/\//i);
+  assert.match(stdout, /\[label\]\(https:\/\//i);
+});
+
 test('brief CLI supports --json (outputs {source,title,brief})', async () => {
   const { stdout, stderr } = await runBrief(['<http://localhost:1/share/abc>', '--json']);
   assert.match(stderr, /NOTE: Unable to fetch this link/i);
