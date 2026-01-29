@@ -42,12 +42,17 @@ function stripLeadingSpeakerLabel(s) {
 
   // Common transcript forms:
   //  - Alice: hello
+  //  - Ivan K.: hello
+  //  - QA-1: hello
   //  - Alice - hello
   //  - Alice — hello
   // Keep this conservative to avoid deleting meaningful prefixes.
+  // Allow a bit of punctuation that appears in names (., ', -, underscores).
+  const speaker = /[A-Za-z0-9][A-Za-z0-9 ._\-'’]{0,40}/;
+
   return line
-    .replace(/^[A-Za-z][A-Za-z ]{0,40}:\s+(?!\/\/)/, '')
-    .replace(/^[A-Za-z][A-Za-z ]{0,40}\s*[\-–—]\s+/, '')
+    .replace(new RegExp(`^${speaker.source}:\\s+(?!\\/\\/)`), '')
+    .replace(new RegExp(`^${speaker.source}\\s*[\\-–—]\\s+`), '')
     .trim();
 }
 
