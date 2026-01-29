@@ -57,7 +57,7 @@ function stripLeadingSpeakerLabel(s) {
   const role = String.raw`(?:\s*(?:\([^)]{1,30}\)|\[[^\]]{1,30}\]))?`;
 
   return line
-    .replace(new RegExp(`^${speaker.source}${role}:\\s+(?!\\/\\/)`), '')
+    .replace(new RegExp(`^${speaker.source}${role}:\\s*(?!\\/\\/)`), '')
     .replace(new RegExp(`^${speaker.source}${role}\\s*[\\-–—]\\s+`), '')
     .trim();
 }
