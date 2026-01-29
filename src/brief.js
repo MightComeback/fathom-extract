@@ -35,7 +35,7 @@ export function normalizeUrlLike(s) {
   const slack = v0.match(/^<\s*([^|>\s]+)\s*\|[^>]*>\s*[)\]>'\"`“”‘’»«›‹.,;:!?…。！，？。､、）】〉》」』}]*$/i);
   if (slack) {
     const u = String(slack[1] || '').trim();
-    if (/^https?:\/\//i.test(u)) return u;
+    if (/^(?:https?:\/\/|data:)/i.test(u)) return u;
     const bare = u.match(/^(?:www\.)?fathom\.video\/[\S]+/i);
     if (bare) return `https://${bare[0]}`;
   }
@@ -43,7 +43,7 @@ export function normalizeUrlLike(s) {
   const angle = v0.match(/^<\s*([^>\s]+)\s*>\s*[)\]>'\"`“”‘’»«›‹.,;:!?…。！，？。､、）】〉》」』}]*$/i);
   if (angle) {
     const u = String(angle[1] || '').trim();
-    if (/^https?:\/\//i.test(u)) return u;
+    if (/^(?:https?:\/\/|data:)/i.test(u)) return u;
     const bare = u.match(/^(?:www\.)?fathom\.video\/[\S]+/i);
     if (bare) return `https://${bare[0]}`;
   }
@@ -54,11 +54,11 @@ export function normalizeUrlLike(s) {
   //   [label](fathom.video/share/...) or [label](www.fathom.video/share/...)
   // Also tolerate trailing punctuation after the wrapper.
   const md = v0.match(
-    /^\[[^\]]*\]\(\s*(?<u>(?:https?:\/\/[^)\s]+)|(?:(?:www\.)?fathom\.video\/[^)\s]+))\s*\)\s*[)\]>'\"`“”‘’»«›‹.,;:!?…。！，？。､、）】〉》」』}]*$/i
+    /^\[[^\]]*\]\(\s*(?<u>(?:(?:https?:\/\/|data:)[^)\s]+)|(?:(?:www\.)?fathom\.video\/[^)\s]+))\s*\)\s*[)\]>'\"`“”‘’»«›‹.,;:!?…。！，？。､、）】〉》」』}]*$/i
   );
   if (md) {
     const u = String(md.groups?.u || '').trim();
-    if (/^https?:\/\//i.test(u)) return u;
+    if (/^(?:https?:\/\/|data:)/i.test(u)) return u;
     const bare = u.match(/^(?:www\.)?fathom\.video\/[\S]+/i);
     if (bare) return `https://${bare[0]}`;
     return u;
@@ -68,11 +68,13 @@ export function normalizeUrlLike(s) {
   // Also strip "!" and "?" which frequently get appended in chat.
   // Include a few common Unicode punctuation variants (…, fullwidth !/? and Chinese/Japanese punctuation).
   // Include backticks for cases like: `https://example.com`
-  if (/^https?:\/\//i.test(v0)) {
+  if (/^(?:https?:\/\/|data:)/i.test(v0)) {
     // Common copy/paste pattern: "https://... (Fathom)".
     // Only strip parenthetical suffixes when separated by whitespace to avoid mangling URLs
     // that legitimately contain parentheses.
-    v0 = v0.replace(/\s+\([^)]*\)\s*$/g, '');
+    if (!/^data:/i.test(v0)) {
+      v0 = v0.replace(/\s+\([^)]*\)\s*$/g, '');
+    }
     return v0.replace(/[)\]>'\"`“”‘’»«›‹.,;:!?…。！，？。､、）】〉》」』}]+$/g, '');
   }
 

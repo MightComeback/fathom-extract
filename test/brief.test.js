@@ -510,3 +510,14 @@ test('brief timestamps extraction does not skip timestamps at the start of a new
   assert.match(out, /^- 00:01 — /m);
   assert.match(out, /^- 00:05 — /m);
 });
+
+test('brief normalizes data: URLs in Source (useful for tests/local repros)', () => {
+  const url = 'data:text/plain,hello';
+  const out = renderBrief({
+    source: `(<${url}|local>)`,
+    title: 'Test',
+    transcript: '00:01 Alice: Hi',
+  });
+
+  assert.match(out, new RegExp(`^Source: ${url.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, 'm'));
+});
