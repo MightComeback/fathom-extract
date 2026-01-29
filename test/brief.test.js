@@ -311,6 +311,17 @@ test('brief teaser accepts Unicode bullet prefixes (•) and strips timestamps',
   assert.match(stdout, /^- Yep/m);
 });
 
+test('brief teaser accepts additional Unicode bullet prefixes (·/●/◦)', async () => {
+  const { stdout } = await runBrief(['--stdin'], {
+    stdin: ['· 00:01 Alice: It crashes', '● 00:05 Bob: Yep', '◦ 00:09 Carol: Third', ''].join('\n'),
+  });
+
+  assert.match(stdout, /^## Transcript teaser \(first lines\)/m);
+  assert.match(stdout, /^- It crashes/m);
+  assert.match(stdout, /^- Yep/m);
+  assert.match(stdout, /^- Third/m);
+});
+
 test('brief teaser accepts Unicode dash bullet prefixes (–/—)', async () => {
   const { stdout } = await runBrief(['--stdin'], {
     stdin: ['– 00:01 Alice: It crashes', '— 00:05 Bob: Yep', ''].join('\n'),
