@@ -114,7 +114,7 @@ async function main() {
         transcript: extracted.text,
       });
       await maybeCopy(out);
-      process.stdout.write(out);
+      process.stdout.write(`${out}\n`);
     } catch (e) {
       if (e && e.code === 2) {
         process.stderr.write(
@@ -173,7 +173,7 @@ async function main() {
   }
 
   await maybeCopy(brief);
-  process.stdout.write(brief);
+  process.stdout.write(`${brief}\n`);
 }
 
 main().catch((e) => {
