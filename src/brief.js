@@ -28,7 +28,8 @@ function normalizeUrlLike(s) {
   if (md) return md[1];
 
   // Strip common trailing punctuation from chat copy/paste (e.g. "https://...)").
-  if (/^https?:\/\//i.test(v0)) return v0.replace(/[)\]>'\".,;:]+$/g, '');
+  // Also strip "!" and "?" which frequently get appended in chat.
+  if (/^https?:\/\//i.test(v0)) return v0.replace(/[)\]>'\".,;:!?]+$/g, '');
 
   return v0;
 }
