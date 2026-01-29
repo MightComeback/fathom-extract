@@ -21,6 +21,8 @@ function normalizeUrlLike(s) {
   //   [https://...]
   // Don't strip leading '[' when the string is a markdown link like: [label](url)
   if (!/^\[[^\]]*\]\(/.test(v0)) {
+    // Also strip common quote prefixes from email/chat copy/paste (e.g., "> ").
+    v0 = v0.replace(/^>+\s*/g, '').trim();
     v0 = v0.replace(/^[(`\{"']+\s*/g, '').trim();
   }
 
