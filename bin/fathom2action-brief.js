@@ -5,7 +5,7 @@ import path from 'node:path';
 import { spawn } from 'node:child_process';
 
 import { readStdin, extractFromStdin, extractFromUrl, getVersion } from '../src/extractor.js';
-import { renderBrief } from '../src/brief.js';
+import { renderBrief, normalizeUrlLike } from '../src/brief.js';
 
 function usage(code = 0) {
   const cmd = process.argv[1]?.split('/').pop() || 'fathom2action';
@@ -267,56 +267,7 @@ async function main() {
   }
 
   function cleanUrl(u) {
-    let out = String(u || '').trim();
-    if (!out) return '';
-
-    // Strip common leading wrappers early so we can still recognize wrapped URLs like:
-    //   (<https://...|label>)
-    // Don't strip leading '[' when the string is a markdown link like: [label](url)
-    if (!/^\[[^\]]*\]\(/.test(out)) {
-      // Strip common quote prefixes from email/chat copy/paste (e.g., "> ").
-      out = out.replace(/^>+\s*/g, '').trim();
-      out = out.replace(/^[(`\{"'“”‘’«»‹›]+\s*/g, '').trim();
-    }
-
-    // Allow chat/markdown-friendly wrappers like:
-    //   <https://...>
-    // and Slack-style links like:
-    //   <https://...|label>
-    // Also tolerate trailing punctuation after the wrapper, e.g. "(<...>)".
-    const slack = out.match(/^<\s*([^|>\s]+)\s*\|[^>]*>\s*[)\]>'\"`“”‘’»«›‹.,;:!?…。！，？。､、）】〉》」』]*$/i);
-    if (slack) out = slack[1];
-
-    const m = out.match(/^<\s*([^>\s]+)\s*>\s*[)\]>'\"`“”‘’»«›‹.,;:!?…。！，？。､、）】〉》」』]*$/i);
-    if (m) out = m[1];
-
-    // Markdown link wrapper (copy/paste from docs):
-    //   [label](https://...)
-    // Also tolerate trailing punctuation after the wrapper.
-    const md = out.match(/^\s*\[[^\]]*\]\(\s*(https?:\/\/[^)\s]+)\s*\)\s*[)\]>'\"`“”‘’»«›‹.,;:!?…。！，？。､、）】〉》」』]*$/i);
-    if (md) out = md[1];
-
-    // Strip common trailing punctuation from copy/paste:
-    //   https://...)
-    //   https://...,;
-    //   https://...!? (common in chat)
-    // Also strip a few Unicode punctuation variants (…, fullwidth !/? and Chinese/Japanese punctuation).
-
-    // Common copy/paste pattern: "https://... (Fathom)".
-    // Only strip parenthetical suffixes when separated by whitespace to avoid mangling URLs
-    // that legitimately contain parentheses.
-    if (/^https?:\/\//i.test(out)) out = out.replace(/\s+\([^)]*\)\s*$/g, '');
-
-    out = out.replace(/[)\]>'\"`“”‘’»«›‹.,;:!?…。！，？。､、）】〉》」』]+$/g, '');
-
-    // Convenience: accept bare fathom.video URLs (no scheme) from chat copy/paste.
-    // Example: fathom.video/share/<TOKEN>
-    if (!/^https?:\/\//i.test(out)) {
-      const bare = out.match(/^(?:www\.)?fathom\.video\/[\S]+/i);
-      if (bare) out = `https://${bare[0]}`;
-    }
-
-    return out;
+    return normalizeUrlLike(u);
   }
 
   const url = cleanUrl(cleanArgs[0]);

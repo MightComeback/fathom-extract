@@ -8,7 +8,7 @@ function oneLine(s) {
     .trim();
 }
 
-function normalizeUrlLike(s) {
+export function normalizeUrlLike(s) {
   let v0 = oneLine(s);
   if (!v0) return '';
 
