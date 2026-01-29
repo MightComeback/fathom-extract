@@ -33,6 +33,7 @@ Env:
   F2A_COPY              If truthy (1/true/yes/on), behave as if --copy was passed.
   F2A_COPY_BRIEF        If truthy (1/true/yes/on), behave as if --copy-brief was passed.
   F2A_OUT               Default for --out (flags win).
+  F2A_NO_NOTE          If truthy (1/true/yes/on), behave as if --no-note was passed.
 
 Notes:
   - You can paste URLs directly from chat/markdown, e.g. <https://...>, <https://...|label>, or [label](https://...). Trailing punctuation is ignored.
@@ -63,7 +64,7 @@ async function main() {
   // more useful to copy the rendered markdown brief (the thing you paste into Linear/GitHub)
   // rather than the JSON wrapper.
   const copyBriefWhenJson = copyToClipboard && outputJson && !copyBriefOnly;
-  const suppressNote = args.includes('--no-note');
+  const suppressNote = args.includes('--no-note') || truthyEnv('F2A_NO_NOTE');
 
   function takeFlagValue(flag) {
     const idx = args.indexOf(flag);
