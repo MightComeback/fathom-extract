@@ -32,6 +32,7 @@ Env:
   F2A_MAX_TIMESTAMPS     Default for --max-timestamps (flags win).
 
 Notes:
+  - You can paste URLs directly from chat/markdown, e.g. <https://...>, <https://...|label>, or [label](https://...). Trailing punctuation is ignored.
   - If the URL cannot be fetched (auth-gated), the tool will print a ready-to-paste brief and ask for transcript via ${cmd} --stdin.
 `);
   process.exit(code);
