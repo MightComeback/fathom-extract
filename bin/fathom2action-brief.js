@@ -135,7 +135,18 @@ async function main() {
     return;
   }
 
+  // URL mode expects a single positional argument.
+  if (cleanArgs.length > 1) {
+    process.stderr.write(`ERROR: unexpected extra arguments: ${cleanArgs.slice(1).join(' ')}\n`);
+    usage(2);
+  }
+
   const url = cleanArgs[0];
+  if (!/^https?:\/\//i.test(url)) {
+    process.stderr.write(`ERROR: expected a URL starting with http(s):// (got: ${url})\n`);
+    usage(2);
+  }
+
   const extracted = await extractFromUrl(url, {
     // Keep this lightweight: we only need the transcript for a brief.
     downloadMedia: false,
