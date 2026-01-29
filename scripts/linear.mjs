@@ -21,7 +21,22 @@ const token = process.env.LINEAR_API_KEY;
 if (!token) die('Missing env LINEAR_API_KEY');
 
 const [cmd, issueKey, ...rest] = process.argv.slice(2);
-if (!cmd) die('Missing command');
+
+function printHelp() {
+  process.stdout.write(`Usage:
+  node scripts/linear.mjs issue-state-type MIG-14
+  node scripts/linear.mjs comment MIG-14 "text..."
+
+Requires env:
+  LINEAR_API_KEY
+`);
+}
+
+if (!cmd || cmd === '--help' || cmd === '-h' || cmd === 'help') {
+  printHelp();
+  process.exit(0);
+}
+
 if (cmd !== 'issue-state-type' && cmd !== 'comment') die(`Unknown command: ${cmd}`);
 if (!issueKey) die('Missing issue key (e.g. MIG-14)');
 
