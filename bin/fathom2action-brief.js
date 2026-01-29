@@ -94,6 +94,14 @@ async function main() {
   const cmdOverride = takeFlagValue('--cmd') ?? envOrUndefined('F2A_CMD');
   const cmdName = String(cmdOverride || cmd).trim() || cmd;
 
+  function cleanSource(v) {
+    if (v == null) return undefined;
+    const raw = String(v).trim();
+    if (!raw) return undefined;
+    // Allow copy/paste wrappers like "Source: <https://...>" when users set --source explicitly.
+    return normalizeUrlLike(raw) || raw;
+  }
+
   function envOrUndefined(name) {
     const raw = String(process.env[name] || '').trim();
     return raw === '' ? undefined : raw;
@@ -236,7 +244,7 @@ async function main() {
     const content = await readStdin();
     try {
       const extracted = extractFromStdin({ content, source: 'stdin' });
-      const source = sourceOverride || extracted.source;
+      const source = cleanSource(sourceOverride) || cleanSource(extracted.source) || extracted.source;
       const title = titleOverride || extracted.title;
       const brief = renderBrief({
         cmd: cmdName,
@@ -255,7 +263,7 @@ async function main() {
       // UX nicety: if stdin is empty but the user explicitly provided Source/Title overrides,
       // allow generating a blank template rather than erroring.
       if (e && e.code === 2 && (sourceOverride || titleOverride)) {
-        const source = sourceOverride;
+        const source = cleanSource(sourceOverride);
         const title = titleOverride;
         const brief = renderBrief({
           cmd: cmdName,
@@ -284,7 +292,7 @@ async function main() {
   }
 
   if (templateMode) {
-    const source = sourceOverride;
+    const source = cleanSource(sourceOverride);
     const title = titleOverride;
     const brief = renderBrief({
       cmd: cmdName,
@@ -339,7 +347,7 @@ async function main() {
 
   const brief = renderBrief({
     cmd: cmdName,
-    source: sourceOverride || extracted.source,
+    source: cleanSource(sourceOverride) || cleanSource(extracted.source) || extracted.source,
     title: titleOverride || extracted.title,
     transcript: extracted.text,
     fetchError: extracted.fetchError,
@@ -355,7 +363,7 @@ async function main() {
   }
 
   const out = formatOutput({
-    source: sourceOverride || extracted.source,
+    source: cleanSource(sourceOverride) || cleanSource(extracted.source) || extracted.source,
     title: titleOverride || extracted.title,
     brief,
   });
