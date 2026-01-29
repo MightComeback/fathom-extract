@@ -24,6 +24,10 @@ npm link
 ### Option B: no global install (explicit path)
 
 ```bash
+# brief generator
+node ./bin/fathom2action-brief.js --help
+
+# extractor
 node ./bin/fathom2action-extract.js --help
 ```
 
