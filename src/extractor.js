@@ -1108,16 +1108,34 @@ export function extractFromStdin({ content, source }) {
   }
 
   function takeSource(line) {
-    const s = String(line || '').trim();
-    if (!s) return null;
+    const s0 = String(line || '').trim();
+    if (!s0) return null;
 
     // Allow a "Source:" prefix (common in briefs) as well as a bare URL.
-    // Examples:
-    //   Source: https://fathom.video/share/...
-    //   Fathom: https://fathom.video/share/...
-    const sourcePrefixed = s.match(/^(?:source|fathom)\s*:\s*(https?:\/\/\S+)\s*$/i);
-    if (sourcePrefixed) return sourcePrefixed[1];
-    if (/^https?:\/\//i.test(s)) return s;
+    // Also accept angle-bracket wrapped URLs (common in chats / markdown):
+    //   Source: <https://fathom.video/share/...>
+    //   <https://fathom.video/share/...>
+    function cleanUrl(u) {
+      let out = String(u || '').trim();
+      if (!out) return '';
+
+      // Strip <...> wrappers
+      const m = out.match(/^<\s*(https?:\/\/[^>\s]+)\s*>$/i);
+      if (m) out = m[1];
+
+      // Strip common trailing punctuation from copy/paste
+      out = out.replace(/[)\]>'\".,;:]+$/g, '');
+      return out;
+    }
+
+    const sourcePrefixed = s0.match(/^(?:source|fathom)\s*:\s*(.+)\s*$/i);
+    if (sourcePrefixed) {
+      const u = cleanUrl(sourcePrefixed[1]);
+      if (/^https?:\/\//i.test(u)) return u;
+    }
+
+    const bare = cleanUrl(s0);
+    if (/^https?:\/\//i.test(bare)) return bare;
 
     return null;
   }
