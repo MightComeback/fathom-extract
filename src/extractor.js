@@ -734,8 +734,9 @@ async function probeIsMediaUrl(url, { cookie = null, referer = null } = {}) {
   }
 
   try {
-    const res = await fetch(u, { method: 'GET', redirect: 'follow', headers });
-    // Avoid downloading: if the server doesn't send a helpful content-type, we bail.
+    // Fallback GET: request only the first byte to avoid accidentally downloading large media.
+    // Many servers honor Range; if they ignore it, we still bail based on content-type.
+    const res = await fetch(u, { method: 'GET', redirect: 'follow', headers: { ...headers, range: 'bytes=0-0' } });
     const ok = res.ok ? await check(res) : false;
     try { res.body?.cancel?.(); } catch {}
     return ok;
