@@ -36,6 +36,12 @@ test('brief CLI does not crash when URL fetch fails; prints NOTE to stderr', asy
   assert.match(stderr, /fathom2action-brief\.js --stdin|fathom2action --stdin/);
 });
 
+test('brief CLI supports F2A_NO_NOTE=1 to suppress stderr NOTE on fetch failure', async () => {
+  const { stdout, stderr } = await runBrief(['http://localhost:1/share/abc'], { env: { F2A_NO_NOTE: '1' } });
+  assert.ok(stdout.length > 0);
+  assert.doesNotMatch(stderr, /NOTE: Unable to fetch this link/i);
+});
+
 test('brief CLI accepts bare fathom.video URLs (no scheme) and normalizes to https://', async () => {
   const { stdout, stderr } = await runBrief(['fathom.video/share/abc']);
   assert.ok(stdout.length > 0);
