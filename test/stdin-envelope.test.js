@@ -40,6 +40,18 @@ test('extractFromStdin accepts common chat wrappers around Source URLs', () => {
   assert.equal(out.title, 'Wrapped URL');
 });
 
+test('extractFromStdin accepts "Source - <url>" style labels (dash separator)', () => {
+  const input = [
+    'Source - https://fathom.video/share/abc',
+    'Title: Dash label',
+    '00:01 Alice: it crashes',
+  ].join('\n');
+
+  const out = extractFromStdin({ content: input, source: 'stdin' });
+  assert.equal(out.source, 'https://fathom.video/share/abc');
+  assert.equal(out.title, 'Dash label');
+});
+
 test('extractFromStdin treats "Subject:" as a Title alias', () => {
   const input = [
     'Source: https://fathom.video/share/abc',
