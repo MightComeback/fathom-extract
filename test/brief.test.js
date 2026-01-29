@@ -118,6 +118,17 @@ test('brief teaser strips speaker labels when dash separator has no spaces', asy
   assert.match(stdout, /^- Yep/m);
 });
 
+test('brief normalizes Source URLs with leading quote prefixes (> ...)', () => {
+  const brief = renderBrief({
+    source: '> <https://example.com/path?q=1>',
+    title: 'Test',
+    transcript: '',
+  });
+
+  assert.match(brief, /^Source: https:\/\/example\.com\/path\?q=1$/m);
+  assert.match(brief, /^- Fathom: https:\/\/example\.com\/path\?q=1$/m);
+});
+
 test('brief --stdin treats a leading URL line as the Source', async () => {
   const url = 'https://fathom.video/share/abc';
   const { stdout } = await runBrief(['--stdin'], {

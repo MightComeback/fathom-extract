@@ -254,6 +254,8 @@ async function main() {
     //   (<https://...|label>)
     // Don't strip leading '[' when the string is a markdown link like: [label](url)
     if (!/^\[[^\]]*\]\(/.test(out)) {
+      // Strip common quote prefixes from email/chat copy/paste (e.g., "> ").
+      out = out.replace(/^>+\s*/g, '').trim();
       out = out.replace(/^[(`\{"']+\s*/g, '').trim();
     }
 
