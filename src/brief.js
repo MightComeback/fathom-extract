@@ -50,9 +50,19 @@ export function normalizeUrlLike(s) {
 
   // Accept markdown link form:
   //   [label](https://example.com)
+  // Also accept bare fathom.video links without a scheme:
+  //   [label](fathom.video/share/...) or [label](www.fathom.video/share/...)
   // Also tolerate trailing punctuation after the wrapper.
-  const md = v0.match(/^\[[^\]]*\]\(\s*(https?:\/\/[^)\s]+)\s*\)\s*[)\]>'\"`“”‘’»«›‹.,;:!?…。！，？。､、）】〉》」』}]*$/i);
-  if (md) return md[1];
+  const md = v0.match(
+    /^\[[^\]]*\]\(\s*(?<u>(?:https?:\/\/[^)\s]+)|(?:(?:www\.)?fathom\.video\/[^)\s]+))\s*\)\s*[)\]>'\"`“”‘’»«›‹.,;:!?…。！，？。､、）】〉》」』}]*$/i
+  );
+  if (md) {
+    const u = String(md.groups?.u || '').trim();
+    if (/^https?:\/\//i.test(u)) return u;
+    const bare = u.match(/^(?:www\.)?fathom\.video\/[\S]+/i);
+    if (bare) return `https://${bare[0]}`;
+    return u;
+  }
 
   // Strip common trailing punctuation from chat copy/paste (e.g. "https://...)").
   // Also strip "!" and "?" which frequently get appended in chat.
