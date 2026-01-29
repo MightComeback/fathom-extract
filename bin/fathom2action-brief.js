@@ -15,7 +15,7 @@ Usage:
   ${cmd} - [--copy]
 
 Options:
-  --copy    Also copy the generated brief to clipboard (best-effort; uses pbcopy when available).
+  --copy    Also copy the generated brief to clipboard (best-effort; tries pbcopy, wl-copy, or xclip).
 
 Notes:
   - If the URL cannot be fetched (auth-gated), the tool will print a ready-to-paste brief and ask for transcript via ${cmd} --stdin.
@@ -38,25 +38,45 @@ async function main() {
   async function maybeCopy(text) {
     if (!copyToClipboard) return;
 
-    // Best-effort clipboard copy (Mac). If pbcopy isn't available, we just warn.
-    await new Promise((resolve) => {
-      const child = spawn('pbcopy');
-      child.on('error', (err) => {
-        if (err?.code === 'ENOENT') {
-          process.stderr.write('NOTE: --copy requested but pbcopy is not available on this system.\n');
-          return resolve();
+    // Best-effort clipboard copy.
+    // Tries common clipboard CLIs in order:
+    // - macOS: pbcopy
+    // - Wayland: wl-copy
+    // - X11: xclip
+    const candidates = [
+      { cmd: 'pbcopy', args: [] },
+      { cmd: 'wl-copy', args: [] },
+      { cmd: 'xclip', args: ['-selection', 'clipboard'] },
+    ];
+
+    async function tryCommand(cmd, args) {
+      return await new Promise((resolve) => {
+        const child = spawn(cmd, args);
+        child.on('error', (err) => {
+          // Not installed? try the next candidate.
+          if (err?.code === 'ENOENT') return resolve(false);
+          process.stderr.write(`NOTE: --copy failed (${cmd}): ${String(err?.message || err)}\n`);
+          resolve(true);
+        });
+        child.on('close', (code) => resolve(code === 0));
+        try {
+          child.stdin.write(String(text));
+          child.stdin.end();
+        } catch {
+          resolve(false);
         }
-        process.stderr.write(`NOTE: --copy failed: ${String(err?.message || err)}\n`);
-        resolve();
       });
-      child.on('close', () => resolve());
-      try {
-        child.stdin.write(String(text));
-        child.stdin.end();
-      } catch {
-        resolve();
-      }
-    });
+    }
+
+    for (const c of candidates) {
+      // eslint-disable-next-line no-await-in-loop
+      const ok = await tryCommand(c.cmd, c.args);
+      if (ok) return;
+    }
+
+    process.stderr.write(
+      'NOTE: --copy requested but no clipboard command was found (tried pbcopy, wl-copy, xclip).\n'
+    );
   }
 
   async function renderFromStdin() {
