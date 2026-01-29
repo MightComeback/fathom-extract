@@ -15,3 +15,15 @@ test('extractFromStdin supports markdown headings like "## Title"', () => {
   assert.equal(out.title, 'Login breaks on Safari');
   assert.match(out.text, /00:01/);
 });
+
+test('extractFromStdin accepts angle-bracket wrapped Source URLs', () => {
+  const input = [
+    'Source: <https://fathom.video/share/abc>',
+    '# Some title',
+    '00:01 Alice: it crashes',
+  ].join('\n');
+
+  const out = extractFromStdin({ content: input, source: 'stdin' });
+  assert.equal(out.source, 'https://fathom.video/share/abc');
+  assert.equal(out.title, 'Some title');
+});
