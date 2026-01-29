@@ -197,7 +197,10 @@ Env defaults (flags win):
 ## Run locally
 
 ```bash
-bun install
-bun test
-bun run start
+# install
+npm install
+
+# verify
+npm test
+npm run lint
 ```
