@@ -97,6 +97,58 @@ https://fathom.video/share/<TOKEN>
 00:01 Alice: It crashes when I click “Sign in”…
 ```
 
+### Example Output
+
+By default, `fathom2action` produces a markdown brief ready to paste into Linear or GitHub:
+
+```markdown
+# Bug report brief
+
+Source: https://fathom.video/share/...
+Title: Login breaks on Safari
+
+## Links
+- Fathom: https://fathom.video/share/...
+
+## How to update this brief
+- If you can access the Fathom link: re-run \`fathom2action "<link>"\`
+- If the link is auth-gated: copy the transcript and pipe it into \`fathom2action --stdin\`
+...
+
+## 1-sentence summary
+- 
+
+## Repro steps
+1. 
+2. 
+3. 
+
+## Expected vs actual
+- Expected: 
+- Actual: 
+
+## Environment / context
+- Who: 
+- Where (page/URL): 
+- Browser / OS: 
+- Build / SHA: 
+- When: 
+
+## Attachments / evidence
+- Screenshot(s): 
+- Console/logs: 
+- Video: 
+
+## Timestamps
+- 
+
+## Next actions
+- [ ] 
+
+## Transcript teaser (first lines)
+- 00:01 Alice: It crashes when I click “Sign in”…
+```
+
 ### 1) Auth-gated Fathom link → transcript + video.mp4 + 5-min segments
 
 ```bash
