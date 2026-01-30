@@ -332,7 +332,9 @@ function extractBugHints(transcript) {
       lower.includes('hang') ||
       lower.includes('stuck') ||
       lower.includes('blank screen') ||
-      lower.includes('white screen')
+      lower.includes('white screen') ||
+      lower.includes('spinning') ||
+      lower.includes('infinite loop')
     ) {
       actual.push(s);
     }
