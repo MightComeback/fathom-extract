@@ -385,6 +385,14 @@ function generateNextActions(transcript, actualHints = []) {
     actions.add('Check broken links / routing');
   }
 
+  // UI / Visual
+  if (
+    actualHints.some(h => /layout|css|style|align|overlap|cut off|responsive|broken ui|misaligned/i.test(h)) ||
+    /layout|css|style|align|overlap|cut off|responsive|broken ui|misaligned/i.test(lowerT)
+  ) {
+    actions.add('Check responsive styles / CSS');
+  }
+
   // If mobile mentioned
   if (/ios|android|mobile|iphone|ipad/i.test(lowerT)) {
     actions.add('Test on physical device');
