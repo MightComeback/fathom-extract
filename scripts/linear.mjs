@@ -17,9 +17,6 @@ function die(msg) {
   process.exit(1);
 }
 
-const token = process.env.LINEAR_API_KEY;
-if (!token) die('Missing env LINEAR_API_KEY');
-
 const [cmd, issueKey, ...rest] = process.argv.slice(2);
 
 function printHelp() {
@@ -36,6 +33,9 @@ if (!cmd || cmd === '--help' || cmd === '-h' || cmd === 'help') {
   printHelp();
   process.exit(0);
 }
+
+const token = process.env.LINEAR_API_KEY;
+if (!token) die('Missing env LINEAR_API_KEY');
 
 if (cmd !== 'issue-state-type' && cmd !== 'comment' && cmd !== 'dump') die(`Unknown command: ${cmd}`);
 if (!issueKey) die('Missing issue key (e.g. MIG-14)');
