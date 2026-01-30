@@ -31,3 +31,8 @@ test('MIG-14: renderBrief includes fetch error but preserves title if known', (t
   assert.ok(output.includes('Fetch error: Some error'));
 });
 
+test('MIG-14: renderBrief accepts url as an alias for source', (t) => {
+  const output = renderBrief({ url: 'https://example.com' });
+  assert.ok(output.includes('Source: https://example.com'));
+});
+
