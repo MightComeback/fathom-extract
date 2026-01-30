@@ -320,7 +320,10 @@ function extractBugHints(transcript) {
       lower.includes('output was') ||
       lower.includes('nothing happened') ||
       lower.includes('fails') ||
-      lower.includes('crashes')
+      lower.includes('crashes') ||
+      lower.includes('freeze') ||
+      lower.includes('hang') ||
+      lower.includes('stuck')
     ) {
       actual.push(s);
     }
