@@ -268,8 +268,6 @@ Env defaults (flags win):
 - `--download-media <path>` (set mp4 output path)
 - `--pretty` (pretty JSON)
 
-<!-- Tracking: MIG-14 -->
-
 ## Run locally
 
 ```bash
@@ -280,16 +278,3 @@ npm install
 npm test
 npm run lint
 ```
-
-## Migration (MIG-14)
-
-- [x] Keep extractor output stable across inputs (golden tests)
-- [x] Document required env vars and examples
-
-### Env vars (helpers)
-
-- `LINEAR_API_KEY`: required to use `scripts/linear.js` (used by the always-on shipping loop)
-
-## MIG-14
-
-Tracking: Linear issue MIG-14.
