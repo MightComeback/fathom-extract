@@ -13,7 +13,7 @@
     "test:ci": "node --test",
     "test:unit": "node --test",
     "release": "./scripts/release.sh",
-    "check-status": "node check_issue.js"
+    "check-status": "node scripts/linear.mjs issue-state-type MIG-14"
   },
   "repository": {
     "type": "git",
