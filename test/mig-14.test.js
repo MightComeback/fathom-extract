@@ -18,3 +18,9 @@ test('MIG-14: renderBrief handles missing transcript', (t) => {
   assert.ok(output.includes('Title: Test'));
   assert.ok(output.includes('Expected: ')); // Should be empty, not undefined
 });
+
+test('MIG-14: renderBrief includes fetch error when provided', (t) => {
+  const output = renderBrief({ fetchError: 'Network timeout' });
+  assert.ok(output.includes('Fetch error: Network timeout'));
+  assert.ok(output.includes('Source: (unknown)'));
+});
