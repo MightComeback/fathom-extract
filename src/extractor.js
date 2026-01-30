@@ -992,9 +992,10 @@ export async function extractFromUrl(
     referer = null,
     mediaOutPath = null,
     userAgent = null,
+    timeoutMs = null,
   } = {}
 ) {
-  const fetched = await fetchUrlText(url, { cookie, referer, userAgent });
+  const fetched = await fetchUrlText(url, { cookie, referer, userAgent, timeoutMs });
   if (fetched.ok) {
     const norm = normalizeFetchedContent(fetched.text, url);
 
