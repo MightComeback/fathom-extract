@@ -12,7 +12,8 @@
     "lint": "node --check bin/fathom2action-brief.js bin/fathom2action-extract.js bin/fathom2action.js src/brief.js src/extractor.js scripts/linear.mjs",
     "test:ci": "node --test",
     "test:unit": "node --test",
-    "release": "./scripts/release.sh"
+    "release": "./scripts/release.sh",
+    "check-status": "node check_issue.js"
   },
   "repository": {
     "type": "git",
