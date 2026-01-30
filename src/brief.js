@@ -332,6 +332,7 @@ function extractBugHints(transcript) {
 export function renderBrief({
   cmd = 'fathom2action',
   source,
+  url,
   title,
   date,
   transcript,
@@ -340,7 +341,7 @@ export function renderBrief({
   timestampsMax = 6,
 } = {}) {
   const cmdName = oneLine(cmd) || 'fathom2action';
-  const src = normalizeUrlLike(source);
+  const src = normalizeUrlLike(source || url);
   const t = oneLine(title);
   const d = oneLine(date);
   let teaserLimit = teaserMax == null ? 6 : Number(teaserMax);
