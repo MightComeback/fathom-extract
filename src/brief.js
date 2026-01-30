@@ -258,10 +258,10 @@ function extractEnvironment(transcript) {
   const os = ['mac', 'macos', 'windows', 'linux', 'android', 'ios', 'iphone', 'ipad'];
 
   for (const b of browsers) {
-    if (s.includes(b)) hits.push(b.charAt(0).toUpperCase() + b.slice(1));
+    if (new RegExp(`\\b\\b`, "i").test(s)) hits.push(b.charAt(0).toUpperCase() + b.slice(1));
   }
   for (const o of os) {
-    if (s.includes(o)) {
+    if (new RegExp(`\\b\\b`, "i").test(s)) {
       // Normalize macos -> macOS, ios -> iOS
       if (o === 'macos') hits.push('macOS');
       else if (o === 'ios' || o === 'iphone' || o === 'ipad') hits.push('iOS');
