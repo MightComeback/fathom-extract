@@ -377,6 +377,14 @@ function generateNextActions(transcript, actualHints = []) {
     actions.add('Check recent changes');
   }
 
+  // Broken links / 404
+  if (
+    actualHints.some(h => /404|not found|page missing/i.test(h)) ||
+    /404|not found|page missing|page does not exist/i.test(lowerT)
+  ) {
+    actions.add('Check broken links / routing');
+  }
+
   // If mobile mentioned
   if (/ios|android|mobile|iphone|ipad/i.test(lowerT)) {
     actions.add('Test on physical device');
