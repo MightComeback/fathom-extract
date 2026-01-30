@@ -45,9 +45,9 @@ test('renderBrief respects zero limits', (t) => {
   assert.doesNotMatch(output, /## Timestamps/);
 });
 
-test('renderBrief handles whitespace-only sourceUrl as unknown', (t) => {
+test('renderBrief handles whitespace-only source as unknown', (t) => {
   const output = renderBrief({
-    sourceUrl: '   \t\n  ',
+    source: '   \t\n  ',
   });
   assert.match(output, /Source: \(unknown\)/);
 });
