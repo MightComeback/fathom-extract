@@ -87,3 +87,16 @@ export function parseSimpleVtt(vttString) {
   return content.join(' ');
 }
 
+export function formatSeconds(seconds) {
+  const s = Math.floor(Number(seconds));
+  if (isNaN(s)) return '';
+  
+  const h = Math.floor(s / 3600);
+  const m = Math.floor((s % 3600) / 60);
+  const sc = s % 60;
+  
+  return h > 0 
+    ? `${h}:${String(m).padStart(2, '0')}:${String(sc).padStart(2, '0')}` 
+    : `${m}:${String(sc).padStart(2, '0')}`;
+}
+
