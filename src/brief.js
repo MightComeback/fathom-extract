@@ -608,6 +608,14 @@ export function generateNextActions(transcript, actualHints = []) {
     actions.add('Check search indexing / query logic');
   }
 
+  // Pagination
+  if (
+    actualHints.some(h => /pagination|page \d|next page|load more|infinite scroll/i.test(h)) ||
+    /pagination|page \d|next page|load more|infinite scroll/i.test(lowerT)
+  ) {
+    actions.add('Check pagination logic / offset');
+  }
+
   // Timezone / Date
   if (
     actualHints.some(h => /timezone|utc|pst|est|gmt|wrong time|date format|invalid date/i.test(h)) ||
