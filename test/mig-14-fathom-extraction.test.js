@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert';
-import { extractFathomTranscriptUrl } from '../src/fathom.js';
+import { extractFathomTranscriptUrl } from '../src/providers/fathom.js';
 
 test('extractFathomTranscriptUrl finds copyTranscriptUrl in JSON', () => {
   const html = `window.state = { copyTranscriptUrl: "https://fathom.video/copy_transcript/123" };`;
