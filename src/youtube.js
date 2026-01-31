@@ -39,8 +39,17 @@ export async function fetchYoutubeOembed(url, { timeoutMs = 5000 } = {}) {
 
 export function extractYoutubeMetadataFromHtml(html) {
   const s = String(html || '');
-  // Look for ytInitialPlayerResponse (variable assignment)
-  const m = s.match(/ytInitialPlayerResponse\s*=\s*(\{[\s\S]*?\});/);
+  // multiple patterns for ytInitialPlayerResponse assignment
+  // 1. var ytInitialPlayerResponse = {...};
+  // 2. window["ytInitialPlayerResponse"] = {...};
+  // 3. ytInitialPlayerResponse = {...};
+  let m = s.match(/(?:window\["ytInitialPlayerResponse"\]|ytInitialPlayerResponse)\s*=\s*(\{[\s\S]*?\});/);
+  
+  // If not found, try without semicolon (sometimes in script tags it's just the object)
+  if (!m) {
+    m = s.match(/(?:window\["ytInitialPlayerResponse"\]|ytInitialPlayerResponse)\s*=\s*(\{[\s\S]*?\})\n/);
+  }
+
   if (!m) return null;
 
   try {
