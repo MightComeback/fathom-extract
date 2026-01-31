@@ -1,3 +1,5 @@
+import { extractJsonBlock } from './utils.js';
+
 export function isYoutubeUrl(url) {
   const u = String(url || '').trim();
   // Handles:
@@ -45,17 +47,12 @@ export function extractYoutubeMetadataFromHtml(html) {
   // 1. var ytInitialPlayerResponse = {...};
   // 2. window["ytInitialPlayerResponse"] = {...};
   // 3. ytInitialPlayerResponse = {...};
-  let m = s.match(/(?:window\["ytInitialPlayerResponse"\]|ytInitialPlayerResponse)\s*=\s*(\{[\s\S]*?\});/);
   
-  // If not found, try without semicolon (sometimes in script tags it's just the object)
-  if (!m) {
-    m = s.match(/(?:window\["ytInitialPlayerResponse"\]|ytInitialPlayerResponse)\s*=\s*(\{[\s\S]*?\})\n/);
-  }
-
+  const m = extractJsonBlock(s, /(?:window\["ytInitialPlayerResponse"\]|ytInitialPlayerResponse)\s*=\s*/);
   if (!m) return null;
 
   try {
-    const data = JSON.parse(m[1]);
+    const data = JSON.parse(m);
     if (!data || !data.videoDetails) return null;
 
     const d = data.videoDetails;
