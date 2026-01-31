@@ -49,3 +49,28 @@ test('extractLoomMetadataFromHtml: extracts date (createdAt)', () => {
     assert.equal(meta.title, "Dated Video");
     assert.equal(meta.date, "2024-01-01T12:00:00.000Z");
 });
+
+test('extractLoomMetadataFromHtml: prefers MP4 over M3U8', () => {
+    const mockState = {
+        "RegularUserVideo:123": {
+            "name": "Mixed Video",
+            "nullableRawCdnUrl({\"acceptableMimes\":[\"MP4\"],\"password\":null})": {
+                "url": "https://cdn.loom.com/video.mp4"
+            },
+            "nullableRawCdnUrl({\"acceptableMimes\":[\"M3U8\"],\"password\":null})": {
+                "url": "https://cdn.loom.com/video.m3u8"
+            }
+        }
+    };
+    
+    const html = `
+    <html>
+    <script>
+    window.__APOLLO_STATE__ = ${JSON.stringify(mockState)};
+    </script>
+    </html>
+    `;
+
+    const meta = extractLoomMetadataFromHtml(html);
+    assert.equal(meta.mediaUrl, "https://cdn.loom.com/video.mp4");
+});

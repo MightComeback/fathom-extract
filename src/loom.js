@@ -84,13 +84,13 @@ export function extractLoomMetadataFromHtml(html, targetId = null) {
       else if (video.thumbnailUrl) result.thumbnailUrl = video.thumbnailUrl;
       if (video.createdAt) result.date = video.createdAt;
 
-      // Extract Media URL (priority: M3U8 > DASH > MP4)
+      // Extract Media URL (priority: MP4 > M3U8 > DASH)
       const findUrl = (type) => {
         const key = Object.keys(video).find(k => k.startsWith('nullableRawCdnUrl') && k.includes(type));
         return (key && video[key]) ? video[key].url : null;
       };
 
-      result.mediaUrl = findUrl('M3U8') || findUrl('DASH') || findUrl('MP4');
+      result.mediaUrl = findUrl('MP4') || findUrl('M3U8') || findUrl('DASH');
 
       // Extract Author via normalized reference
       if (video.owner && video.owner.__ref) {
