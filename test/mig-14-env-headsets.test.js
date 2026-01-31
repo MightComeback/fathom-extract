@@ -22,3 +22,10 @@ test('MIG-14: extractEnvironment detects Meta Quest', () => {
   });
   assert.match(brief, /Meta Quest/);
 });
+
+test('MIG-14: extractEnvironment detects PlayStation VR', () => {
+  const brief = renderBrief({
+    transcript: 'Browsing using PSVR2 on my PS5.',
+  });
+  assert.match(brief, /PlayStation VR/);
+});
