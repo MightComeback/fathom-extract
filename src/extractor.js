@@ -1223,7 +1223,7 @@ export function extractFromStdin({ content, source }) {
     //   Source - https://...
     //   Link — https://...
     const sourcePrefixed = s0.match(
-      /^(?:source|fathom(?:\s*link)?|share(?:\s*link)?|link|url|recording|video(?:\s*link)?|meeting|call|(?:google\s*meet|meet)(?:\s*link)?|(?:(?:microsoft|ms)\s*)?teams(?:\s*link)?|zoom(?:\s*link)?|webex(?:\s*link)?|loom(?:\s*link)?)\s*(?:[:=\-–—])\s*(.*)\s*$/i
+      /^(?:source|fathom(?:\s*link)?|share(?:\s*link)?|link|url|recording|video(?:\s*link)?|meeting|call|(?:google\s*meet|meet)(?:\s*link)?|(?:(?:microsoft|ms)\s*)?teams(?:\s*link)?|zoom(?:\s*link)?|webex(?:\s*link)?|jitsi(?:\s*link)?|loom(?:\s*link)?)\s*(?:[:=\-–—])\s*(.*)\s*$/i
     );
     if (sourcePrefixed) {
       const u = cleanUrl(sourcePrefixed[1]);
