@@ -799,6 +799,14 @@ export function generateNextActions(transcript, actualHints = []) {
     actions.add('Check rate limits');
   }
 
+  // Environment Config
+  if (
+    actualHints.some(h => /process\.env|missing config|undefined variable|config map|secret key missing|env var/i.test(h)) ||
+    /process\.env|missing config|undefined variable|config map|secret key missing|env var/i.test(lowerT)
+  ) {
+    actions.add('Check environment variables / config');
+  }
+
   // i18n / Translation
   if (
     actualHints.some(h => /translation|missing key|wrong language|incorrect language|still in english|not translated|language.*set to|i18n|locale|localization|shows.*key|displays.*key/i.test(h)) ||
