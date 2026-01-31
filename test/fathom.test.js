@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert';
-import { isFathomUrl } from '../src/fathom.js';
+import { isFathomUrl } from '../src/providers/fathom.js';
 
 test('isFathomUrl detects valid links', () => {
   assert.strictEqual(isFathomUrl('https://fathom.video/share/123'), true);
