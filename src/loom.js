@@ -75,6 +75,7 @@ export function extractLoomMetadataFromHtml(html) {
     title: null,
     description: null,
     duration: null,
+    thumbnailUrl: null,
   };
 
   // Find the RegularUserVideo object
@@ -86,6 +87,8 @@ export function extractLoomMetadataFromHtml(html) {
       if (video.name) result.title = video.name;
       if (video.description) result.description = video.description;
       if (Number.isFinite(video.duration)) result.duration = video.duration;
+      if (video.posterUrl) result.thumbnailUrl = video.posterUrl;
+      else if (video.thumbnailUrl) result.thumbnailUrl = video.thumbnailUrl;
 
       // Extract Media URL (priority: M3U8 > DASH > MP4)
       const findUrl = (type) => {
