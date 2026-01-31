@@ -505,6 +505,16 @@ export function generateNextActions(transcript, actualHints = []) {
     actions.add('Check file upload limits / S3');
   }
 
+  // CDN / Assets
+  if (
+    actualHints.some(h => /broken image|missing image|image missing|image not loading|asset|cdn|icon|svg|png|jpg|webp/i.test(h)) ||
+    /broken image|missing image|image missing|image not loading|asset|cdn/i.test(lowerT) ||
+    /(?:broken|missing|failed|not show|not load).*(?:icon|svg|png|jpg|webp|image)/i.test(lowerT) ||
+    /(?:icon|svg|png|jpg|webp|image).*(?:broken|missing|failed|not show|not load)/i.test(lowerT)
+  ) {
+    actions.add('Check CDN / Assets');
+  }
+
   // API Rates / CORS
   if (
     actualHints.some(h => /cors|access-control-allow-origin|cross-origin|blocked by cors/i.test(h)) ||
