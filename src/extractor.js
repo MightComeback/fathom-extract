@@ -6,7 +6,7 @@ import { pipeline } from 'node:stream/promises';
 import { Readable } from 'node:stream';
 
 import { normalizeUrlLike } from './brief.js';
-import { isLoomUrl, fetchLoomOembed, extractLoomId, fetchLoomSession } from './loom.js';
+import { isLoomUrl, fetchLoomOembed, extractLoomId, extractLoomMetadataFromHtml } from './loom.js';
 
 export function readStdin() {
   // If the user runs `fathom2action --stdin` interactively without piping input,
@@ -1108,21 +1108,12 @@ export async function extractFromUrl(
       }
 
       try {
-        const id = extractLoomId(url);
-        if (id) {
-          const session = await fetchLoomSession(id, { cookie, timeoutMs });
-          if (session) {
-            if (session.name && !norm.suggestedTitle) norm.suggestedTitle = session.name;
-            if (session.description && !norm.description) norm.description = session.description;
-            
-            // New: try to extract transcript from session API (using refactored helper)
-            if (!norm.text || norm.text.length < 50) {
-              const apiTranscript = findTranscriptInObject(session);
-              if (apiTranscript && apiTranscript.length > 50) {
-                norm.text = apiTranscript;
-              }
-            }
-          }
+        const meta = extractLoomMetadataFromHtml(fetched.text);
+        if (meta) {
+          if (meta.title && !norm.suggestedTitle) norm.suggestedTitle = meta.title;
+          if (meta.description && !norm.description) norm.description = meta.description;
+          if (meta.mediaUrl) norm.mediaUrl = meta.mediaUrl;
+          if (meta.transcriptUrl) norm._loomTranscriptUrl = meta.transcriptUrl;
         }
       } catch {
         // ignore
@@ -1131,7 +1122,9 @@ export async function extractFromUrl(
 
     // If the page doesn't embed a transcript, prefer the real transcript endpoint when available.
     let transcriptText = norm.text;
-    const transcriptUrl = extractTranscriptUrlFromHtml(fetched.text, url);
+    let transcriptUrl = extractTranscriptUrlFromHtml(fetched.text, url);
+    if (norm._loomTranscriptUrl) transcriptUrl = norm._loomTranscriptUrl;
+
     const hasTimestamps = /\b\d{1,2}:\d{2}(?::\d{2})?\b/.test(String(transcriptText || ''));
     
     // Fetch if we have a URL and (no text OR text sucks).
