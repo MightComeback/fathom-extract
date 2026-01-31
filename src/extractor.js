@@ -361,3 +361,35 @@ export async function extractFromUrl(url, options = {}) {
 
 // Re-export old name for backward compat
 export const extractFathomData = extractFromUrl; 
+
+export function normalizeFetchedContent(html, sourceUrl) {
+    if (!html) return { suggestedTitle: '', description: '', text: '' };
+    const dom = new JSDOM(html);
+    const doc = dom.window.document;
+    
+    // Title
+    let title = doc.querySelector('meta[property="og:title"]')?.content || 
+                doc.querySelector('meta[name="twitter:title"]')?.content || 
+                doc.querySelector('title')?.textContent || 
+                doc.querySelector('h1')?.textContent || '';
+    
+    // Description
+    const description = doc.querySelector('meta[property="og:description"]')?.content ||
+                        doc.querySelector('meta[name="description"]')?.content || 
+                        doc.querySelector('meta[name="twitter:description"]')?.content || '';
+
+    // Text extraction with <br> handling
+    const body = doc.body;
+    let text = '';
+    if (body) {
+        const brs = body.querySelectorAll('br');
+        brs.forEach(br => br.replaceWith('\n'));
+        text = body.textContent.trim();
+    }
+
+    return {
+        suggestedTitle: title.trim(),
+        description: description.trim(),
+        text: text
+    };
+}
