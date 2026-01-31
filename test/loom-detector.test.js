@@ -16,10 +16,19 @@ test('isLoomUrl rejects invalid URLs', (t) => {
   assert.strictEqual(isLoomUrl(null), false);
 });
 
+test('isLoomUrl allows IDs with dashes', (t) => {
+  assert.strictEqual(isLoomUrl('https://www.loom.com/share/abc-123-def'), true);
+});
+
 test('extractLoomId extracts ID correctly', (t) => {
   assert.strictEqual(extractLoomId('https://www.loom.com/share/abcdef123'), 'abcdef123');
   assert.strictEqual(extractLoomId('https://www.loom.com/v/xyz789'), 'xyz789');
   assert.strictEqual(extractLoomId('https://www.loom.com/embed/foo555'), 'foo555');
+});
+
+test('extractLoomId extracts IDs with dashes fully', (t) => {
+  const id = 'abc-123-def';
+  assert.strictEqual(extractLoomId(`https://www.loom.com/share/${id}`), id);
 });
 
 test('extractLoomId returns null for invalid URLs', (t) => {
