@@ -92,3 +92,42 @@ test('extractYoutubeMetadataFromHtml: extracts channelId and thumbnail', () => {
   assert.equal(meta.channelId, 'UCuAXFkgsw1L7xaCfnd5JJOw');
   assert.equal(meta.thumbnailUrl, 'https://i.ytimg.com/vi/dQw4w9WgXcQ/hqdefault.jpg');
 });
+
+test('extractYoutubeMetadataFromHtml: supports window["ytInitialPlayerResponse"] assignment', () => {
+    const mockData = {
+        "videoDetails": {
+            "title": "Window Assignment",
+            "lengthSeconds": "120"
+        }
+    };
+    
+    // Test the window["ytInitialPlayerResponse"] form
+    const html = `
+    <script>
+    window["ytInitialPlayerResponse"] = ${JSON.stringify(mockData)};
+    </script>
+    `;
+
+    const meta = extractYoutubeMetadataFromHtml(html);
+    assert.equal(meta.title, "Window Assignment");
+    assert.equal(meta.duration, 120);
+});
+
+test('extractYoutubeMetadataFromHtml: supports assignment without semicolon', () => {
+    const mockData = {
+        "videoDetails": {
+            "title": "No Semicolon",
+            "lengthSeconds": "60"
+        }
+    };
+    
+    // Test without semicolon but with newline
+    const html = `
+    <script>
+    var ytInitialPlayerResponse = ${JSON.stringify(mockData)}
+    </script>
+    `;
+
+    const meta = extractYoutubeMetadataFromHtml(html);
+    assert.equal(meta.title, "No Semicolon");
+});
