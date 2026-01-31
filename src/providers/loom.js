@@ -1,4 +1,4 @@
-import { extractJsonBlock, parseSimpleVtt } from '../utils.js';
+import { extractJsonBlock, parseSimpleVtt, formatSeconds } from '../utils.js';
 
 export function isLoomUrl(url) {
   const u = String(url || '').trim();
@@ -149,10 +149,7 @@ export function extractLoomMetadataFromHtml(html, targetId = null) {
           // Attempt to format timestamp if available (seconds)
           let prefix = '';
           if (typeof p.startTime === 'number') {
-            const s = Math.floor(p.startTime);
-            const mm = Math.floor(s / 60);
-            const ss = s % 60;
-            prefix = `${mm}:${String(ss).padStart(2, '0')} `;
+            prefix = `${formatSeconds(p.startTime)} `;
           }
           parts.push(prefix + p.text.trim());
         }
@@ -199,10 +196,7 @@ export function parseLoomTranscript(text) {
              // Extract timestamp if available
              const t = p.startTime !== undefined ? p.startTime : (p.start !== undefined ? p.start : null);
              if (typeof t === 'number') {
-               const s = Math.floor(t);
-               const mm = Math.floor(s / 60);
-               const ss = s % 60;
-               return `${mm}:${String(ss).padStart(2, '0')} ${text}`;
+               return `${formatSeconds(t)} ${text}`;
              }
 
              return text;
