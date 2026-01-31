@@ -5,14 +5,16 @@ export function isYoutubeUrl(url) {
   // youtube.com/embed/ID
   // youtube.com/v/ID
   // youtube.com/shorts/ID
+  // youtube.com/live/ID
   // youtu.be/ID
-  return /^(https?:\/\/)?(www\.|m\.)?(youtube\.com\/(watch\?v=|embed\/|v\/|shorts\/)|youtu\.be\/)[a-zA-Z0-9_-]{11}/i.test(u);
+  return /^(https?:\/\/)?(www\.|m\.)?(youtube\.com\/(watch\?v=|embed\/|v\/|shorts\/|live\/)|youtu\.be\/)[a-zA-Z0-9_-]{11}/i.test(u);
 }
 
 export function extractYoutubeId(url) {
   const u = String(url || '').trim();
-  const m = u.match(/(?:v=|embed\/|v\/|shorts\/|youtu\.be\/)([a-zA-Z0-9_-]{11})/i);
+  const m = u.match(/(?:v=|embed\/|v\/|shorts\/|live\/|youtu\.be\/)([a-zA-Z0-9_-]{11})/i);
   return m ? m[1] : null;
+
 }
 
 export async function fetchYoutubeOembed(url, { timeoutMs = 5000 } = {}) {
