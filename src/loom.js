@@ -30,3 +30,26 @@ export async function fetchLoomOembed(url, { timeoutMs = 5000 } = {}) {
     return null;
   }
 }
+
+export async function fetchLoomSession(id, { timeoutMs = 5000, cookie = null } = {}) {
+  if (!id) return null;
+  const url = `https://www.loom.com/api/campaigns/sessions/${id}`;
+  const controller = new AbortController();
+  const t = setTimeout(() => controller.abort(), timeoutMs);
+
+  try {
+    const headers = { 'User-Agent': 'video-extract/0.1.0' };
+    if (cookie) headers.Cookie = cookie;
+
+    const res = await fetch(url, {
+      signal: controller.signal,
+      headers
+    });
+    clearTimeout(t);
+    
+    if (!res.ok) return null;
+    return await res.json();
+  } catch {
+    return null;
+  }
+}
