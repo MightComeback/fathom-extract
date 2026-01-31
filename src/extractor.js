@@ -276,7 +276,7 @@ async function extractYoutube(url, page) {
 
     return {
         title: meta?.title || 'YouTube Video',
-        date: new Date().toISOString(), 
+        date: meta?.date || new Date().toISOString(), 
         transcript: transcript || '(No transcript found)',
         videoUrl: directVideoUrl, 
         sourceUrl: url,

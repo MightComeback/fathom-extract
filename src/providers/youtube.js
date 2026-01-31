@@ -65,6 +65,7 @@ export function extractYoutubeMetadataFromHtml(html) {
       channelId: d.channelId || null,
       viewCount: d.viewCount ? Number(d.viewCount) : null,
       isLive: d.isLiveContent || false,
+      date: d.publishDate || data.microformat?.playerMicroformatRenderer?.publishDate || data.microformat?.playerMicroformatRenderer?.uploadDate || null,
       mediaUrl: null,
       transcriptUrl: null,
       thumbnailUrl: d.thumbnail?.thumbnails?.length 
