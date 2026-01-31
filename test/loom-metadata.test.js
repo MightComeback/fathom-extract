@@ -92,3 +92,29 @@ test('extractLoomMetadataFromHtml - Linked Transcript Precedence', () => {
   assert.match(meta.transcriptText, /Correct transcript/);
   assert.doesNotMatch(meta.transcriptText, /Wrong transcript/);
 });
+
+test('extractLoomMetadataFromHtml - LD+JSON Fallback', () => {
+  const html = `
+    <html>
+      <script type="application/ld+json">
+        {
+          "@context": "https://schema.org",
+          "@type": "VideoObject",
+          "name": "LD JSON Title",
+          "description": "LD JSON Description",
+          "duration": "PT5M",
+          "thumbnailUrl": "https://example.com/thumb.jpg",
+          "uploadDate": "2023-05-01T12:00:00Z",
+          "author": { "@type": "Person", "name": "Loom User" }
+        }
+      </script>
+    </html>
+  `;
+  const meta = extractLoomMetadataFromHtml(html);
+  assert.ok(meta, 'Should extract metadata from LD+JSON');
+  assert.strictEqual(meta.title, 'LD JSON Title');
+  assert.strictEqual(meta.description, 'LD JSON Description');
+  assert.strictEqual(meta.thumbnailUrl, 'https://example.com/thumb.jpg');
+  assert.strictEqual(meta.date, '2023-05-01T12:00:00Z');
+  assert.strictEqual(meta.author, 'Loom User');
+});
