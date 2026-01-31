@@ -87,6 +87,20 @@ export function parseSimpleVtt(vttString) {
   return content.join(' ');
 }
 
+export function extractLdJson(html) {
+  if (!html) return null;
+  // Simple regex extraction for ld+json
+  // Note: this finds the *first* block.
+  const match = html.match(/<script[^>]+type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/i);
+  if (!match) return null;
+  
+  try {
+    return JSON.parse(match[1]);
+  } catch (e) {
+    return null;
+  }
+}
+
 export function formatSeconds(seconds) {
   const s = Math.floor(Number(seconds));
   if (isNaN(s)) return '';
