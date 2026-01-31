@@ -377,6 +377,17 @@ export function findTranscriptInObject(parsed) {
       const seen = new Set();
       const visited = new Set();
 
+      // Special case: if root is an array of objects that looks like a transcript, return it directly.
+      if (Array.isArray(node) && node.length > 0 && typeof node[0] === 'object') {
+        // Quick heuristic check
+        const first = node[0];
+        if (first && (first.text || first.content || first.caption) && 
+           (first.startTime !== undefined || first.start !== undefined || first.time !== undefined)) {
+             out.push(node);
+             return out;
+        }
+      }
+
       function walk(n) {
         if (n == null) return;
         if (typeof n !== 'object') return;
@@ -1075,6 +1086,18 @@ async function fetchTranscriptContent(transcriptUrl, { cookie = null, referer = 
         .map(x => x.trim())
         .filter(x => x)
         .join(' '); // Join lines (VTT often breaks sentences)
+    }
+
+    // Strategy C: Generic JSON transcript (Loom source_url, etc.)
+    // Expects { transcript: [ { text: "...", start: ... }, ... ] } or similar
+    if (txt.trim().startsWith('{') || txt.trim().startsWith('[')) {
+      try {
+        const json = JSON.parse(txt);
+        const found = findTranscriptInObject(json); // Use existing helper which is robust
+        if (found) return found;
+      } catch {
+        // Not valid JSON, fall through to plain text
+      }
     }
 
     // Fallback: assume plain text
