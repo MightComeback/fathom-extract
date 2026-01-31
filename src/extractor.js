@@ -8,6 +8,7 @@ import { Readable } from 'node:stream';
 import { normalizeUrlLike } from './brief.js';
 import { isLoomUrl, fetchLoomOembed, extractLoomId, extractLoomMetadataFromHtml } from './loom.js';
 import { isYoutubeUrl, fetchYoutubeOembed, extractYoutubeMetadataFromHtml } from './youtube.js';
+import { isVimeoUrl, fetchVimeoOembed } from './vimeo.js';
 
 export function readStdin() {
   // If the user runs `fathom2action --stdin` interactively without piping input,
@@ -1145,6 +1146,20 @@ export async function extractFromUrl(
           if (meta.description && !norm.description) norm.description = meta.description;
           if (meta.author && !norm.author) norm.author = meta.author;
           if (meta.transcriptUrl) norm._youtubeTranscriptUrl = meta.transcriptUrl;
+        }
+      } catch {
+        // ignore
+      }
+    }
+
+    if (isVimeoUrl(url)) {
+      try {
+        const oembed = await fetchVimeoOembed(url);
+        if (oembed) {
+          if (oembed.title && !norm.suggestedTitle) norm.suggestedTitle = oembed.title;
+          if (oembed.author_name && !norm.author) norm.author = oembed.author_name;
+          if (oembed.thumbnail_url && !norm.screenshot) norm.screenshot = oembed.thumbnail_url;
+          if (oembed.description && !norm.description) norm.description = oembed.description;
         }
       } catch {
         // ignore
