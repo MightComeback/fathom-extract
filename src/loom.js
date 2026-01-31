@@ -122,3 +122,28 @@ export function extractLoomMetadataFromHtml(html) {
 
   return result;
 }
+
+export function extractLoomMetadataFromSession(session) {
+  if (!session || typeof session !== 'object') return null;
+
+  const result = {
+    title: null,
+    description: null,
+    duration: null,
+    mediaUrl: null,
+    transcriptUrl: null, // API usually gives transcripts as objects, not URLs, handled by findTranscriptInObject
+  };
+
+  if (session.name) result.title = session.name;
+  if (session.description) result.description = session.description;
+  if (typeof session.duration === 'number') result.duration = session.duration;
+
+  // Media URLs
+  // Strategy: check for direct stream fields common in Loom APIs (streams.m3u8, streams.mp4)
+  if (session.streams) {
+    if (session.streams.m3u8) result.mediaUrl = session.streams.m3u8;
+    else if (session.streams.mp4) result.mediaUrl = session.streams.mp4;
+  }
+
+  return result;
+}

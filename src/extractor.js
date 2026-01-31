@@ -6,7 +6,7 @@ import { pipeline } from 'node:stream/promises';
 import { Readable } from 'node:stream';
 
 import { normalizeUrlLike } from './brief.js';
-import { isLoomUrl, fetchLoomOembed, extractLoomId, extractLoomMetadataFromHtml, fetchLoomSession } from './loom.js';
+import { isLoomUrl, fetchLoomOembed, extractLoomId, extractLoomMetadataFromHtml, fetchLoomSession, extractLoomMetadataFromSession } from './loom.js';
 import { isYoutubeUrl, fetchYoutubeOembed } from './youtube.js';
 
 export function readStdin() {
@@ -1127,6 +1127,13 @@ export async function extractFromUrl(
           if (session) {
             const found = findTranscriptInObject(session);
             if (found) norm._loomApiTranscript = found;
+
+            const sessionMeta = extractLoomMetadataFromSession(session);
+            if (sessionMeta) {
+              if (sessionMeta.title && !norm.suggestedTitle) norm.suggestedTitle = sessionMeta.title;
+              if (sessionMeta.description && !norm.description) norm.description = sessionMeta.description;
+              if (sessionMeta.mediaUrl && !norm.mediaUrl) norm.mediaUrl = sessionMeta.mediaUrl;
+            }
           }
         }
       } catch {
