@@ -8,7 +8,7 @@ export function isLoomUrl(url) {
 }
 
 export function extractLoomId(url) {
-  const m = String(url || '').match(/loom\.com\/(?:share|v|embed)\/([a-z0-9-]+)/i);
+  const m = String(url || '').match(/loom\.com\/(?:share|v|embed)\/([a-z0-9-_]+)/i);
   return m ? m[1] : null;
 }
 
