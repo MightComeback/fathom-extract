@@ -71,11 +71,25 @@ export async function extractFathom(url, page) {
        const directUrl = extractFathomTranscriptUrl(content);
        if (directUrl) {
           try {
-             // We can't fetch this easily if it requires auth, but sometimes it's public?
-             // Or maybe we can use page.evaluate to fetch it?
-             // For now just log it.
-             console.log('Found direct transcript URL:', directUrl);
-          } catch(e) {}
+             console.log('Found direct transcript URL, attempting fetch:', directUrl);
+             
+             // Attempt to fetch via page context to leverage existing auth/session
+             const fetchedTranscript = await page.evaluate(async (u) => {
+                 try {
+                     const r = await fetch(u);
+                     if (!r.ok) return null;
+                     return await r.text();
+                 } catch (e) {
+                     return null;
+                 }
+             }, directUrl);
+
+             if (fetchedTranscript) {
+                 transcript = fetchedTranscript;
+             }
+          } catch(e) {
+              console.warn('Failed to fetch direct transcript via page context:', e);
+          }
        }
     }
 
