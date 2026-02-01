@@ -11,6 +11,7 @@
 - Youtube support: Metadata extraction verified with fixtures. `fetchYoutubeMediaUrl` verified by tests. Full verification added.
 - Vimeo support: Implemented in `src/providers/vimeo.js`. Verified by tests.
 - Cleanup: Root directory debris removed.
+- Release prep: Version bumped to 0.2.0.
 
 ## Next Steps
-1. Final verification and release prep.
+1. Run release script.
