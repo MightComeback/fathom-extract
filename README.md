@@ -37,10 +37,20 @@ node ./bin/fathom2action-extract.js --help
 
 ## Usage (copy/paste)
 
-### 0) Fathom link → actionable bug brief (MVP)
+### 0) Generate brief from URL (Fathom / Loom / YouTube / Vimeo)
 
 ```bash
+# Fathom
 fathom2action "https://fathom.video/share/<TOKEN>"
+
+# Loom
+fathom2action "https://www.loom.com/share/..."
+
+# YouTube
+fathom2action "https://www.youtube.com/watch?v=..."
+
+# Vimeo
+fathom2action "https://vimeo.com/..."
 
 # (optional) copy the brief directly to your clipboard
 fathom2action "https://fathom.video/share/<TOKEN>" --copy
