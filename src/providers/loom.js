@@ -117,7 +117,25 @@ export function extractLoomMetadataFromHtml(html) {
         }
 
         // Transcript url (VideoTranscriptDetails)
-        const vtdKey = Object.keys(state).find((k) => k.startsWith('VideoTranscriptDetails:'));
+        // Loom pages can contain multiple transcript detail objects; prefer the one linked to the current video.
+        const vtdKeys = Object.keys(state).filter((k) => k.startsWith('VideoTranscriptDetails:'));
+        const pickVtdKey = () => {
+          if (!vtdKeys.length) return '';
+
+          // Prefer an object explicitly linked to this video.
+          for (const k of vtdKeys) {
+            const vtd = state[k] || {};
+            const vtdVideoRef = vtd?.video?.__ref;
+            const vtdVideoId = vtd?.videoId || vtd?.video_id;
+            if ((vtdVideoRef && vtdVideoRef === videoKey) || (vtdVideoId && String(vtdVideoId) === String(vid.id))) {
+              return k;
+            }
+          }
+
+          return vtdKeys[0];
+        };
+
+        const vtdKey = pickVtdKey();
         if (vtdKey) {
           const vtd = state[vtdKey] || {};
           // Loom has used both `source_url` (JSON transcript) and `captions_source_url` (VTT) over time.

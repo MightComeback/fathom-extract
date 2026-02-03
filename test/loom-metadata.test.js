@@ -93,6 +93,30 @@ test('extractLoomMetadataFromHtml - Linked Transcript Precedence', () => {
   assert.doesNotMatch(meta.transcriptText, /Wrong transcript/);
 });
 
+test('extractLoomMetadataFromHtml - Transcript URL prefers linked video', () => {
+  const mockState = {
+    "RegularUserVideo:v1": {
+      "id": "v1",
+      "name": "Main Video",
+    },
+    // A transcript detail for some other video
+    "VideoTranscriptDetails:t_other": {
+      "videoId": "v_other",
+      "source_url": "https://cdn.loom/transcript-other.json"
+    },
+    // The one that should be picked
+    "VideoTranscriptDetails:t_main": {
+      "videoId": "v1",
+      "captions_source_url": "https://cdn.loom/transcript-main.vtt"
+    }
+  };
+
+  const html = `window.__APOLLO_STATE__ = ${JSON.stringify(mockState)};`;
+  const meta = extractLoomMetadataFromHtml(html);
+
+  assert.strictEqual(meta.transcriptUrl, 'https://cdn.loom/transcript-main.vtt');
+});
+
 test('extractLoomMetadataFromHtml - LD+JSON Fallback', () => {
   const html = `
     <html>
