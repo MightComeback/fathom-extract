@@ -496,14 +496,27 @@ async function bestEffortExtract({ url, cookie, referer, userAgent }) {
           const joined = items
             .map((it) => {
               if (typeof it === 'string') return it.trim();
-              return String(
+
+              // Vimeo transcript JSON has shown up in a few shapes. Be generous:
+              //  - { text: "..." }
+              //  - { caption: "..." }
+              //  - { line: "..." }
+              //  - { value: "..." }
+              //  - { content: "..." } or { content: { text: "..." } }
+              //  - { data: { text: "..." } }
+              //  - { payload: { text: "..." } }
+              const raw =
                 it?.text ||
-                  it?.caption ||
-                  it?.line ||
-                  it?.content ||
-                  it?.value ||
-                  ''
-              ).trim();
+                it?.caption ||
+                it?.line ||
+                it?.value ||
+                (typeof it?.content === 'string' ? it.content : '') ||
+                it?.content?.text ||
+                it?.data?.text ||
+                it?.payload?.text ||
+                '';
+
+              return String(raw).trim();
             })
             .filter(Boolean)
             .join(' ')
