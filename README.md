@@ -49,7 +49,7 @@ bun ./bin/video-extract.js --help
 video-brief "https://fathom.video/share/<TOKEN>"
 
 # Loom
-video-brief "https://www.loom.com/share/..."
+video-brief "https://loom.com/share/..."
 
 # YouTube
 video-brief "https://www.youtube.com/watch?v=..."
