@@ -73,10 +73,32 @@ export function normalizeUrlLike(s) {
 
     // Vimeo
     if (host === 'player.vimeo.com' || host === 'vimeo.com') {
-      const m = path.match(/^(?:\/video)?\/(?<id>\d+)(?:\/)?$/i);
-      if (m?.groups?.id) {
+      // Vimeo has many URL shapes:
+      //   https://vimeo.com/123
+      //   https://vimeo.com/channels/foo/123
+      //   https://vimeo.com/ondemand/bar/123
+      //   https://player.vimeo.com/video/123
+      // Normalize everything to https://vimeo.com/<id>[?h=...]
+      let id = '';
+
+      // First: common direct forms.
+      const direct = path.match(/^(?:\/video)?\/(?<id>\d+)(?:\/)?$/i);
+      if (direct?.groups?.id) id = direct.groups.id;
+
+      // Fallback: pick the last numeric path segment.
+      if (!id) {
+        const segs = path.split('/').filter(Boolean);
+        for (let i = segs.length - 1; i >= 0; i--) {
+          if (/^\d+$/.test(segs[i] || '')) {
+            id = segs[i];
+            break;
+          }
+        }
+      }
+
+      if (id) {
         const h = url.searchParams.get('h');
-        return `https://vimeo.com/${m.groups.id}${h ? `?h=${encodeURIComponent(h)}` : ''}`;
+        return `https://vimeo.com/${id}${h ? `?h=${encodeURIComponent(h)}` : ''}`;
       }
       return raw;
     }
