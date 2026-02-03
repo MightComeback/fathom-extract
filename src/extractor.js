@@ -381,6 +381,8 @@ function extractAnyJsonUrls(html, keys = []) {
 
 async function bestEffortExtract({ url, cookie, referer, userAgent }) {
   const headers = buildHeaders({ cookie, referer, userAgent });
+  let mediaUrlRejectReason = '';
+
 
   const resolveUrl = (maybeRelative, base) => {
     const v = String(maybeRelative || '').trim();
@@ -574,7 +576,8 @@ async function bestEffortExtract({ url, cookie, referer, userAgent }) {
   if (mediaUrl && !/\.[a-z0-9]{2,5}(?:\?|#|$)/i.test(mediaUrl)) {
     const ct = await probeContentType(mediaUrl, { headers });
     if (!isProbablyVideoContentType(ct)) {
-      // Reject non-video URLs.
+      // Reject non-video URLs, but keep a helpful reason for the caller.
+      mediaUrlRejectReason = `Resolved mediaUrl does not look like a video (content-type: ${ct || 'unknown'}): ${mediaUrl}`;
       mediaUrl = '';
     }
   }
@@ -583,6 +586,7 @@ async function bestEffortExtract({ url, cookie, referer, userAgent }) {
     title,
     text,
     mediaUrl,
+    mediaUrlRejectReason,
     html,
   };
 }
@@ -644,6 +648,11 @@ export async function extractFromUrl(rawUrl, options = {}) {
     result.title = ex.title || '';
     result.text = ex.text || '';
     result.mediaUrl = ex.mediaUrl || '';
+    // If we rejected a candidate mediaUrl during enrichment/probing, preserve the reason
+    // so downstream callers (and extracted.json) are actionable.
+    if (!result.mediaUrl && ex.mediaUrlRejectReason) {
+      result.mediaDownloadError = ex.mediaUrlRejectReason;
+    }
   } catch (e) {
     result.ok = false;
     result.fetchError = e?.message || String(e);
@@ -668,7 +677,7 @@ export async function extractFromUrl(rawUrl, options = {}) {
   // Download media (default ON)
   if (!noDownload) {
     if (!result.mediaUrl) {
-      result.mediaDownloadError = 'mediaUrl not found';
+      if (!result.mediaDownloadError) result.mediaDownloadError = 'mediaUrl not found';
     } else if (outDir) {
       try {
         const mediaPath = options.mediaOutPath || path.join(outDir, `${slugify(result.title)}.mp4`);
