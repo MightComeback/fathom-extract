@@ -117,6 +117,51 @@ export function isVimeoUrl(url) {
   return !!extractVimeoId(url);
 }
 
+export function isVimeoDomain(url) {
+  const s = withScheme(url);
+  if (!s) return false;
+  try {
+    const u = new URL(s);
+    const host = u.hostname.replace(/^www\./i, '').toLowerCase();
+    return /(^|\.)vimeo\.com$/i.test(host) || host === 'player.vimeo.com';
+  } catch {
+    return false;
+  }
+}
+
+// Some Vimeo URLs are not directly extractable as videos (events/blog/etc).
+// Return a short actionable reason when we can detect this.
+export function vimeoNonVideoReason(url) {
+  const s = withScheme(url);
+  if (!s) return '';
+
+  let u;
+  try {
+    u = new URL(s);
+  } catch {
+    return '';
+  }
+
+  const host = u.hostname.replace(/^www\./i, '').toLowerCase();
+  if (!/(^|\.)vimeo\.com$/i.test(host)) return '';
+
+  const segs = (u.pathname || '/')
+    .split('/')
+    .map((x) => x.trim())
+    .filter(Boolean);
+
+  const first = (segs[0] || '').toLowerCase();
+  if (first === 'event') {
+    return 'Vimeo event pages are not supported. Open the event and copy the actual video URL (typically https://vimeo.com/<id> or https://player.vimeo.com/video/<id>).';
+  }
+
+  if (first === 'blog') {
+    return 'Vimeo blog pages are not supported. Open the embedded video and copy its Vimeo clip URL (https://vimeo.com/<id>).';
+  }
+
+  return '';
+}
+
 export function parseVimeoTranscript(body) {
   const raw = String(body || '');
   if (!raw.trim()) return '';

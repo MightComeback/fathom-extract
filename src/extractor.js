@@ -7,7 +7,7 @@ import { normalizeUrlLike } from './brief.js';
 import { parseSimpleVtt } from './utils.js';
 import { extractFathomTranscriptUrl } from './providers/fathom.js';
 import { isYoutubeUrl, isYoutubeClipUrl, extractYoutubeIdFromClipHtml, extractYoutubeMetadataFromHtml, fetchYoutubeOembed, fetchYoutubeMediaUrl } from './providers/youtube.js';
-import { isVimeoUrl, extractVimeoMetadataFromHtml, fetchVimeoOembed, parseVimeoTranscript } from './providers/vimeo.js';
+import { isVimeoUrl, isVimeoDomain, vimeoNonVideoReason, extractVimeoMetadataFromHtml, fetchVimeoOembed, parseVimeoTranscript } from './providers/vimeo.js';
 import { isLoomUrl, extractLoomMetadataFromHtml, fetchLoomOembed, parseLoomTranscript } from './providers/loom.js';
 
 function oneLine(s) {
@@ -601,6 +601,13 @@ export async function extractFromUrl(rawUrl, options = {}) {
   if (outDir) ensureDir(outDir);
 
   try {
+    // Helpful failure mode: some Vimeo URLs (event/blog/etc) are not actually video pages.
+    // Detect these early so we can avoid confusing "fetch" errors and show actionable guidance.
+    const vimeoReason = vimeoNonVideoReason(url);
+    if (vimeoReason) {
+      throw new Error(vimeoReason);
+    }
+
     // YouTube clip URLs (youtube.com/clip/...) don't include a stable 11-char video id.
     // Best-effort: fetch the clip page and try to resolve its underlying watch video id.
     // If we can't, fall back to a clear, actionable error.
@@ -673,7 +680,7 @@ export async function extractFromUrl(rawUrl, options = {}) {
         );
       }
 
-      if (isVimeoUrl(url)) {
+      if (isVimeoDomain(url)) {
         lines.push(
           '',
           'Vimeo notes:',
@@ -721,7 +728,7 @@ export async function extractFromUrl(rawUrl, options = {}) {
         );
       }
 
-      if (isVimeoUrl(url)) {
+      if (isVimeoDomain(url)) {
         lines.push(
           '',
           'Vimeo notes:',
