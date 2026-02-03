@@ -1,15 +1,15 @@
 # video-extract
 
-Turn a Fathom, Loom, YouTube, or Vimeo link into an **actionable bug report brief** (`video-brief`), and optionally extract the **transcript + video** (`video-extract`).
+Turn a Fathom, Loom, YouTube, or Vimeo link into an **actionable bug report brief** (`video-brief`), and optionally extract the **transcript + video** (`video-extract` / `vdxtr`).
 
-(Backward compatible: the legacy commands `video-brief` and `video-extract` still work.)
+(Backward compatible: the legacy commands `fathom2action` and `fathom-extract` still work.)
 
 ## Install
 
 ### Option A: run from the repo (recommended)
 
 ```bash
-git clone git@github.com:MightComeback/video-extract.git
+git clone https://github.com/MightComeback/video-extract.git
 cd video-extract
 
 # install deps
@@ -166,6 +166,8 @@ Title: Login breaks on Safari
 ```
 
 ### 1) Auth-gated Fathom link → transcript + video.mp4 + 5-min segments
+
+(Shorthand: `vdxtr` is an alias for `video-extract`.)
 
 ```bash
 video-extract "https://fathom.video/share/<TOKEN>" \
