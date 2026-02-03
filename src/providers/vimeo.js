@@ -104,6 +104,21 @@ export function isVimeoUrl(url) {
   return !!extractVimeoId(url);
 }
 
+export async function fetchVimeoOembed(url) {
+  try {
+    const u = new URL('https://vimeo.com/api/oembed.json');
+    u.searchParams.set('url', String(url || ''));
+
+    const res = await fetch(u.toString(), {
+      headers: { accept: 'application/json' },
+    });
+    if (!res.ok) return null;
+    return await res.json();
+  } catch {
+    return null;
+  }
+}
+
 function safeJsonParse(s) {
   try {
     return JSON.parse(s);

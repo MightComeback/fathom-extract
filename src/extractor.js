@@ -7,7 +7,7 @@ import { normalizeUrlLike } from './brief.js';
 import { parseSimpleVtt } from './utils.js';
 import { extractFathomTranscriptUrl } from './providers/fathom.js';
 import { isYoutubeUrl, isYoutubeClipUrl, extractYoutubeMetadataFromHtml, fetchYoutubeOembed, fetchYoutubeMediaUrl } from './providers/youtube.js';
-import { isVimeoUrl, extractVimeoMetadataFromHtml } from './providers/vimeo.js';
+import { isVimeoUrl, extractVimeoMetadataFromHtml, fetchVimeoOembed } from './providers/vimeo.js';
 import { isLoomUrl, extractLoomMetadataFromHtml, fetchLoomOembed, parseLoomTranscript } from './providers/loom.js';
 
 function oneLine(s) {
@@ -468,6 +468,13 @@ async function bestEffortExtract({ url, cookie, referer, userAgent }) {
     } else if (isVimeoUrl(url)) {
       const meta = extractVimeoMetadataFromHtml(html) || {};
       if (meta?.title && !title) title = meta.title;
+
+      // Fallback: Vimeo oEmbed can provide title/author/thumbnail even when clip_page_config is missing.
+      if (!title) {
+        const o = await fetchVimeoOembed(url);
+        if (o?.title) title = String(o.title);
+      }
+
       if (meta?.mediaUrl && !mediaUrl) mediaUrl = resolveUrl(meta.mediaUrl, url);
 
       if (meta?.transcriptUrl && (!text || text === normalizedText)) {
