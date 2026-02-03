@@ -15,6 +15,8 @@ test('Loom Provider: extractLoomId', () => {
   assert.strictEqual(extractLoomId('https://www.loom.com/share/abc-123'), 'abc-123');
   assert.strictEqual(extractLoomId('https://loom.com/v/xyz_987'), 'xyz_987');
   assert.strictEqual(extractLoomId('https://loom.com/embed/123-456'), '123-456');
+  assert.strictEqual(extractLoomId('https://loom.com/i/abcDEF_123'), 'abcDEF_123');
+  assert.strictEqual(extractLoomId('https://loom.com/s/abcDEF_123'), 'abcDEF_123');
 });
 
 test('Loom Provider: parseLoomTranscript json', () => {

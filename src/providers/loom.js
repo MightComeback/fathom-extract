@@ -23,7 +23,16 @@ export function extractLoomId(url) {
   if (parts.length < 2) return null;
 
   const kind = parts[0];
-  if (!['share', 'v', 'embed', 'recording'].includes(kind)) return null;
+  // Loom has used a few URL shapes over time.
+  // Common:
+  //  - /share/<id>
+  //  - /v/<id>
+  //  - /embed/<id>
+  //  - /recording/<id>
+  // Older/alternate (seen in the wild):
+  //  - /i/<id>
+  //  - /s/<id>
+  if (!['share', 's', 'v', 'embed', 'recording', 'i'].includes(kind)) return null;
 
   const id = parts[1];
   return /^[a-zA-Z0-9_-]+$/.test(id || '') ? id : null;

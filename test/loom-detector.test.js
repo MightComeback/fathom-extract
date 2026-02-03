@@ -27,6 +27,8 @@ test('extractLoomId extracts ID correctly', (t) => {
   assert.strictEqual(extractLoomId('https://www.loom.com/v/xyz789'), 'xyz789');
   assert.strictEqual(extractLoomId('https://www.loom.com/embed/foo555'), 'foo555');
   assert.strictEqual(extractLoomId('https://www.loom.com/recording/bar999'), 'bar999');
+  assert.strictEqual(extractLoomId('https://www.loom.com/i/old111'), 'old111');
+  assert.strictEqual(extractLoomId('https://www.loom.com/s/alt222'), 'alt222');
 });
 
 test('extractLoomId extracts IDs with dashes fully', (t) => {
