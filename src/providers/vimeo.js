@@ -22,8 +22,10 @@ export function extractVimeoId(url) {
   // Match numeric ID anywhere in path segments.
   // Vimeo IDs can be shorter than 6 digits (older content), so be permissive.
   // Keep a small floor to avoid matching incidental numbers in paths.
-  const m = u.pathname.match(/\b(\d{3,})\b/);
-  return m ? m[1] : null;
+  // Some Vimeo URLs include multiple numeric segments (e.g. showcases), so prefer the last one.
+  const matches = [...u.pathname.matchAll(/\b(\d{3,})\b/g)];
+  if (!matches.length) return null;
+  return matches[matches.length - 1][1];
 }
 
 export function isVimeoUrl(url) {

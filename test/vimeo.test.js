@@ -5,6 +5,7 @@ import { isVimeoUrl, extractVimeoId, extractVimeoMetadataFromHtml } from '../src
 test('isVimeoUrl identifies Vimeo URLs', () => {
   assert.ok(isVimeoUrl('https://vimeo.com/123456789'));
   assert.ok(isVimeoUrl('https://vimeo.com/channels/staffpicks/123456789'));
+  assert.ok(isVimeoUrl('https://vimeo.com/showcase/12345/video/123456789'));
   assert.ok(isVimeoUrl('vimeo.com/123456789'));
   assert.ok(isVimeoUrl('https://player.vimeo.com/video/123456789'));
   // Older/smaller numeric IDs should still be recognized.
@@ -17,6 +18,7 @@ test('isVimeoUrl identifies Vimeo URLs', () => {
 test('extractVimeoId extracts numeric ID', () => {
   assert.equal(extractVimeoId('https://vimeo.com/123456789'), '123456789');
   assert.equal(extractVimeoId('https://vimeo.com/channels/staffpicks/987654321'), '987654321');
+  assert.equal(extractVimeoId('https://vimeo.com/showcase/12345/video/123456789'), '123456789');
   assert.equal(extractVimeoId('https://player.vimeo.com/video/555666777'), '555666777');
   assert.equal(extractVimeoId('https://player.vimeo.com/video/12345'), '12345');
 });
