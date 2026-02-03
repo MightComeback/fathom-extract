@@ -243,12 +243,16 @@ export function normalizeUrlLike(s) {
         if (!h) {
           const segs = path.split('/').filter(Boolean);
 
-          // Only treat a trailing segment as the unlisted hash when the path shape matches
-          // a canonical unlisted share URL. This avoids accidentally interpreting other
-          // routes as hashes.
-          // Examples:
+          // Unlisted Vimeo URLs often include an extra hash segment (non-numeric token)
+          // that is required for access.
+          // Canonical forms:
           //   /<id>/<hash>
           //   /video/<id>/<hash>
+          // But we also see these hashes appended to other valid clip routes, e.g.:
+          //   /channels/<name>/<id>/<hash>
+          // Preserve the hash by normalizing it into the canonical ?h=... form.
+
+          // 1) Exact canonical forms.
           if (
             segs.length === 2 &&
             segs[0] === id &&
@@ -262,6 +266,16 @@ export function normalizeUrlLike(s) {
             /^[a-zA-Z0-9]+$/.test(segs[2] || '')
           ) {
             h = segs[2];
+          }
+
+          // 2) More general: any path that *ends* with /<id>/<hash>.
+          if (!h && segs.length >= 2) {
+            const last = String(segs[segs.length - 1] || '');
+            const prev = String(segs[segs.length - 2] || '');
+            const looksHashy = /^[a-zA-Z0-9]+$/.test(last) && last.length >= 6;
+            if (prev === id && looksHashy) {
+              h = last;
+            }
           }
         }
 
