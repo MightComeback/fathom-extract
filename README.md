@@ -4,36 +4,39 @@ Turn a Fathom, Loom, YouTube, or Vimeo link into an **actionable bug report brie
 
 ## Install
 
-### Option A: run from the repo (recommended)
+### Option A: install globally with Bun (recommended)
 
 ```bash
-git clone https://github.com/MightComeback/video-extract.git
-cd video-extract
-
-# install deps
-bun install
+bun add -g video-extract
 
 # verify dependencies
 bun -v
 node -v
 ffmpeg -version
 
-# optional: make CLIs available globally
-bun link
+video-brief --help
+video-extract --help
+vdxtr --help
 ```
 
-### Option B: no global install (explicit path)
+### Option B: run from the repo
 
 ```bash
-# brief generator
+git clone https://github.com/MightComeback/video-extract.git
+cd video-extract
+
+bun install
+bun link
+
+video-brief --help
+video-extract --help
+```
+
+### Option C: no global install (explicit path)
+
+```bash
 bun ./bin/video-brief.js --help
-
-# extractor
 bun ./bin/video-extract.js --help
-
-# (on macOS/Linux you can also run them directly after cloning)
-# chmod +x ./bin/*.js
-# ./bin/video-brief.js --help
 ```
 
 ## Requirements
