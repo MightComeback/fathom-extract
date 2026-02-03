@@ -19,6 +19,8 @@ test('normalizeUrlLike strips common prefixes', () => {
   assert.equal(normalizeUrlLike('Fathom: https://example.com'), 'https://example.com');
   assert.equal(normalizeUrlLike('Video: https://example.com'), 'https://example.com');
   assert.equal(normalizeUrlLike('Recording: https://example.com'), 'https://example.com');
+  assert.equal(normalizeUrlLike('YouTube: https://example.com'), 'https://example.com');
+  assert.equal(normalizeUrlLike('Vimeo: https://example.com'), 'https://example.com');
 });
 
 test('normalizeUrlLike handles angle brackets and slack style', () => {
