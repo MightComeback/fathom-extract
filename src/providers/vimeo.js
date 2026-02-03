@@ -16,7 +16,8 @@ export function extractVimeoId(url) {
   }
 
   const host = u.hostname.replace(/^www\./i, '').toLowerCase();
-  if (!/(^|\.)vimeo\.com$/i.test(host)) return null;
+  // Vimeo pages can be served from vimeo.com or the embed host player.vimeo.com.
+  if (!/(^|\.)vimeo\.com$/i.test(host) && host !== 'player.vimeo.com') return null;
 
   // Match numeric ID anywhere in path segments.
   const m = u.pathname.match(/\b(\d{6,})\b/);

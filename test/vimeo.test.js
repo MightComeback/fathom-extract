@@ -6,6 +6,7 @@ test('isVimeoUrl identifies Vimeo URLs', () => {
   assert.ok(isVimeoUrl('https://vimeo.com/123456789'));
   assert.ok(isVimeoUrl('https://vimeo.com/channels/staffpicks/123456789'));
   assert.ok(isVimeoUrl('vimeo.com/123456789'));
+  assert.ok(isVimeoUrl('https://player.vimeo.com/video/123456789'));
   
   assert.equal(isVimeoUrl('https://youtube.com/watch?v=123'), false);
   assert.equal(isVimeoUrl('https://example.com'), false);
@@ -14,6 +15,7 @@ test('isVimeoUrl identifies Vimeo URLs', () => {
 test('extractVimeoId extracts numeric ID', () => {
   assert.equal(extractVimeoId('https://vimeo.com/123456789'), '123456789');
   assert.equal(extractVimeoId('https://vimeo.com/channels/staffpicks/987654321'), '987654321');
+  assert.equal(extractVimeoId('https://player.vimeo.com/video/555666777'), '555666777');
 });
 
 test('extractVimeoMetadataFromHtml parses config object', () => {
