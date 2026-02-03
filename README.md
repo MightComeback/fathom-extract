@@ -1,8 +1,6 @@
 # video-extract
 
-Turn a Fathom, Loom, YouTube, or Vimeo link into an **actionable bug report brief** (`video-brief`), and optionally extract the **transcript + video** (`video-extract` / `vdxtr`).
-
-(Backward compatible: the legacy commands `fathom2action` and `fathom-extract` still work.)
+Turn a Fathom, Loom, YouTube, or Vimeo link into an **actionable bug report brief** (`video-brief` / `vbrief`), and optionally extract the **transcript + video** (`video-extract` / `vdxtr`).
 
 ## Install
 
@@ -170,7 +168,7 @@ Title: Login breaks on Safari
 (Shorthand: `vdxtr` is an alias for `video-extract`.)
 
 ```bash
-video-extract "https://fathom.video/share/<TOKEN>" \
+vdxtr "https://fathom.video/share/<TOKEN>" \
   --cookie-file ./cookie.txt \
   --out-dir ./artifacts \
   --split-seconds 300 \
@@ -186,7 +184,7 @@ Outputs in `./artifacts/`:
 ### 2) Transcript-only (skip video download)
 
 ```bash
-video-extract "https://fathom.video/share/<TOKEN>" --cookie-file ./cookie.txt --no-download --pretty
+vdxtr "https://fathom.video/share/<TOKEN>" --cookie-file ./cookie.txt --no-download --pretty
 ```
 
 ### 3) Control segment size
@@ -195,7 +193,7 @@ video-extract "https://fathom.video/share/<TOKEN>" --cookie-file ./cookie.txt --
 # default split size when --split-seconds isn't provided
 export FATHOM_SPLIT_SECONDS=300
 
-video-extract "https://..." --cookie-file ./cookie.txt --out-dir ./artifacts --pretty
+vdxtr "https://..." --cookie-file ./cookie.txt --out-dir ./artifacts --pretty
 ```
 
 ### 4) Cookie options
@@ -235,7 +233,7 @@ echo "<name=value; other=value>" > cookie.txt
 Then run:
 
 ```bash
-video-extract "https://fathom.video/share/<TOKEN>" --cookie-file ./cookie.txt --out-dir ./artifacts --pretty
+vdxtr "https://fathom.video/share/<TOKEN>" --cookie-file ./cookie.txt --out-dir ./artifacts --pretty
 ```
 
 ## What this repo does
@@ -296,3 +294,9 @@ bun install
 bun run test
 bun run lint
 ```
+
+## Legacy commands (compat)
+
+The old CLI names still work, but prefer the new ones in docs/scripts:
+- `fathom2action` → `video-brief`
+- `fathom-extract` → `video-extract` / `vdxtr`
