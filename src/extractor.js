@@ -692,14 +692,26 @@ export async function extractFromUrl(rawUrl, options = {}) {
     // meaningful transcript/body text, provide an actionable placeholder instead of an
     // empty transcript.txt.
     if (!String(result.text || '').trim()) {
-      result.text = [
+      const lines = [
         'No transcript text was found for this link.',
         `Source: ${url}`,
         '',
         'If this link is auth-gated, pass cookies:',
         '- VIDEO_EXTRACT_COOKIE=... (or --cookie; compat: FATHOM_COOKIE)',
         '- VIDEO_EXTRACT_COOKIE_FILE=... (or --cookie-file; compat: FATHOM_COOKIE_FILE)',
-      ].join('\n');
+      ];
+
+      // Provider parity: Loom links frequently require a "sid" (session id) query param
+      // for private shares. Cookies can also work.
+      if (isLoomUrl(url)) {
+        lines.push(
+          '',
+          'Loom notes:',
+          '- For private Loom shares, ensure the URL includes ?sid=... (session id) or pass cookies.'
+        );
+      }
+
+      result.text = lines.join('\n');
     }
 
     // If we rejected a candidate mediaUrl during enrichment/probing, preserve the reason
@@ -711,15 +723,27 @@ export async function extractFromUrl(rawUrl, options = {}) {
     result.ok = false;
     result.fetchError = e?.message || String(e);
     result.title = '';
-    result.text = [
-      'Unable to fetch this link.',
-      `Source: ${url}`,
-      `Fetch error: ${result.fetchError}`,
-      '',
-      'If this link is auth-gated, pass cookies:',
-      '- VIDEO_EXTRACT_COOKIE=... (or --cookie; compat: FATHOM_COOKIE)',
-      '- VIDEO_EXTRACT_COOKIE_FILE=... (or --cookie-file; compat: FATHOM_COOKIE_FILE)',
-    ].join('\n');
+    {
+      const lines = [
+        'Unable to fetch this link.',
+        `Source: ${url}`,
+        `Fetch error: ${result.fetchError}`,
+        '',
+        'If this link is auth-gated, pass cookies:',
+        '- VIDEO_EXTRACT_COOKIE=... (or --cookie; compat: FATHOM_COOKIE)',
+        '- VIDEO_EXTRACT_COOKIE_FILE=... (or --cookie-file; compat: FATHOM_COOKIE_FILE)',
+      ];
+
+      if (isLoomUrl(url)) {
+        lines.push(
+          '',
+          'Loom notes:',
+          '- For private Loom shares, ensure the URL includes ?sid=... (session id) or pass cookies.'
+        );
+      }
+
+      result.text = lines.join('\n');
+    }
   }
 
   // Write transcript.txt and extracted.json if outDir requested.
