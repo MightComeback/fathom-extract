@@ -6,6 +6,8 @@ test('normalizeUrlLike handles basic URLs', () => {
   assert.equal(normalizeUrlLike('https://example.com'), 'https://example.com');
   assert.equal(normalizeUrlLike('http://example.com'), 'http://example.com');
   assert.equal(normalizeUrlLike('  https://example.com  '), 'https://example.com');
+  // Provider parity: accept protocol-relative URLs too.
+  assert.equal(normalizeUrlLike('//example.com/path?q=1'), 'https://example.com/path?q=1');
 });
 
 test('normalizeUrlLike strips common prefixes', () => {

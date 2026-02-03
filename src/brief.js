@@ -14,6 +14,10 @@ export function normalizeUrlLike(s) {
   let v0 = oneLine(s);
   if (!v0) return '';
 
+  // Provider parity: accept protocol-relative URLs (e.g. "//example.com/path").
+  // These are common in HTML/markdown copy/paste.
+  if (v0.startsWith('//')) v0 = `https:${v0}`;
+
   function canonicalizeKnownProviderUrl(u) {
     let raw = String(u || '').trim();
     if (!raw) return raw;
