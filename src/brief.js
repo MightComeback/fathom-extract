@@ -247,17 +247,19 @@ export function normalizeUrlLike(s) {
   const slack = v0.match(/^<\s*([^|>\s]+)\s*\|[^>]*>\s*[)\]>'\"`“”‘’»«›‹.,;:!?…。！，？。､、）】〉》」』}]*$/i);
   if (slack) {
     const u = String(slack[1] || '').trim();
-    if (/^(?:https?:\/\/|data:)/i.test(u)) return u;
+    if (/^data:/i.test(u)) return u;
+    if (/^https?:\/\//i.test(u)) return canonicalizeKnownProviderUrl(u);
     const bare = normalizeBareKnownUrl(u);
-    if (bare) return bare;
+    if (bare) return canonicalizeKnownProviderUrl(bare);
   }
 
   const angle = v0.match(/^<\s*([^>\s]+)\s*>\s*[)\]>'\"`“”‘’»«›‹.,;:!?…。！，？。､、）】〉》」』}]*$/i);
   if (angle) {
     const u = String(angle[1] || '').trim();
-    if (/^(?:https?:\/\/|data:)/i.test(u)) return u;
+    if (/^data:/i.test(u)) return u;
+    if (/^https?:\/\//i.test(u)) return canonicalizeKnownProviderUrl(u);
     const bare = normalizeBareKnownUrl(u);
-    if (bare) return bare;
+    if (bare) return canonicalizeKnownProviderUrl(bare);
   }
 
   // Accept markdown link form:
@@ -266,13 +268,14 @@ export function normalizeUrlLike(s) {
   //   [label](fathom.video/share/...) or [label](www.fathom.video/share/...)
   // Also tolerate trailing punctuation after the wrapper.
   const md = v0.match(
-    /^\[[^\]]*\]\(\s*(?<u>(?:(?:https?:\/\/|data:)[^)\s]+)|(?:(?:www\.)?(?:fathom\.video|loom\.com|youtu\.be|(?:m\.|music\.)?youtube\.com|youtube-nocookie\.com|vimeo\.com|player\.vimeo\.com)\/[^)\s]+))\s*\)\s*[)\]>'\"`“”‘’»«›‹.,;:!?…。！，？。､、）】〉》」』}]*$/i
+    /^\[[^\]]*\]\(\s*(?<u>(?:(?:https?:\/\/|data:)[^)\s]+)|(?:(?:www\.)?(?:fathom\.video|loom\.com|share\.loom\.com|youtu\.be|(?:m\.|music\.)?youtube\.com|youtube-nocookie\.com|vimeo\.com|player\.vimeo\.com)\/[^)\s]+))\s*\)\s*[)\]>'\"`“”‘’»«›‹.,;:!?…。！，？。､、）】〉》」』}]*$/i
   );
   if (md) {
     const u = String(md.groups?.u || '').trim();
-    if (/^(?:https?:\/\/|data:)/i.test(u)) return u;
+    if (/^data:/i.test(u)) return u;
+    if (/^https?:\/\//i.test(u)) return canonicalizeKnownProviderUrl(u);
     const bare = normalizeBareKnownUrl(u);
-    if (bare) return bare;
+    if (bare) return canonicalizeKnownProviderUrl(bare);
     return u;
   }
 

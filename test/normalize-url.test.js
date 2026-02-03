@@ -34,6 +34,12 @@ test('normalizeUrlLike handles markdown', () => {
   assert.equal(normalizeUrlLike('[Label]( https://example.com )'), 'https://example.com');
   // Trailing punctuation after markdown
   assert.equal(normalizeUrlLike('[Label](https://example.com).'), 'https://example.com');
+
+  // Provider parity: accept Loom share subdomain inside markdown links.
+  assert.equal(
+    normalizeUrlLike('[Loom](https://share.loom.com/share/1234abcd)'),
+    'https://loom.com/share/1234abcd'
+  );
 });
 
 test('normalizeUrlLike handles trailing punctuation on bare URLs', () => {
