@@ -11,6 +11,9 @@ test('isVimeoUrl identifies Vimeo URLs', () => {
   // Older/smaller numeric IDs should still be recognized.
   assert.ok(isVimeoUrl('https://player.vimeo.com/video/12345'));
 
+  // Provider parity: avoid false positives for non-video Vimeo pages with date-like paths.
+  assert.equal(isVimeoUrl('https://vimeo.com/blog/post/2026/02/03/some-article'), false);
+
   assert.equal(isVimeoUrl('https://youtube.com/watch?v=123'), false);
   assert.equal(isVimeoUrl('https://example.com'), false);
 });
@@ -21,6 +24,8 @@ test('extractVimeoId extracts numeric ID', () => {
   assert.equal(extractVimeoId('https://vimeo.com/showcase/12345/video/123456789'), '123456789');
   assert.equal(extractVimeoId('https://player.vimeo.com/video/555666777'), '555666777');
   assert.equal(extractVimeoId('https://player.vimeo.com/video/12345'), '12345');
+
+  assert.equal(extractVimeoId('https://vimeo.com/blog/post/2026/02/03/some-article'), null);
 });
 
 test('extractVimeoMetadataFromHtml parses config object', () => {

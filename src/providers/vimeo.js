@@ -8,6 +8,7 @@ function withScheme(s) {
 export function extractVimeoId(url) {
   const s = withScheme(url);
   if (!s) return null;
+
   let u;
   try {
     u = new URL(s);
@@ -19,13 +20,73 @@ export function extractVimeoId(url) {
   // Vimeo pages can be served from vimeo.com or the embed host player.vimeo.com.
   if (!/(^|\.)vimeo\.com$/i.test(host) && host !== 'player.vimeo.com') return null;
 
-  // Match numeric ID anywhere in path segments.
-  // Vimeo IDs can be shorter than 6 digits (older content), so be permissive.
-  // Keep a small floor to avoid matching incidental numbers in paths.
-  // Some Vimeo URLs include multiple numeric segments (e.g. showcases), so prefer the last one.
-  const matches = [...u.pathname.matchAll(/\b(\d{3,})\b/g)];
-  if (!matches.length) return null;
-  return matches[matches.length - 1][1];
+  const segs = (u.pathname || '/')
+    .split('/')
+    .map((x) => x.trim())
+    .filter(Boolean);
+
+  // player.vimeo.com/video/<id>
+  if (host === 'player.vimeo.com') {
+    const idx = segs.findIndex((x) => x.toLowerCase() === 'video');
+    const maybe = idx !== -1 ? segs[idx + 1] : '';
+    return /^\d{3,}$/.test(maybe || '') ? maybe : null;
+  }
+
+  // Avoid false positives for non-video pages that contain date-like path segments.
+  // Example: https://vimeo.com/blog/post/2026/02/03/... (not a clip).
+  // We only accept IDs in common video URL positions.
+  const blockedTopLevel = new Set([
+    'blog',
+    'help',
+    'upgrade',
+    'terms',
+    'privacy',
+    'about',
+    'features',
+    'api',
+    'apps',
+    'categories',
+  ]);
+
+  const first = (segs[0] || '').toLowerCase();
+  const isBlocked = blockedTopLevel.has(first);
+
+  const isId = (x) => /^\d{3,}$/.test(String(x || ''));
+  const isVideoKeyword = (x) => {
+    const v = String(x || '').toLowerCase();
+    return v === 'video' || v === 'videos';
+  };
+
+  // Prefer the last plausible numeric segment.
+  // Accept patterns like:
+  //  - /<id>
+  //  - /channels/<name>/<id>
+  //  - /showcase/<id>/video/<id>
+  //  - /groups/<name>/videos/<id>
+  //  - /album/<id>/video/<id>
+  const candidates = [];
+  for (let i = 0; i < segs.length; i++) {
+    const cur = segs[i];
+    if (!isId(cur)) continue;
+
+    const prev = segs[i - 1] || '';
+    const isExplicitVideo = isVideoKeyword(prev);
+    const isLast = i === segs.length - 1;
+
+    if (isExplicitVideo) {
+      candidates.push(cur);
+      continue;
+    }
+
+    // Allow the final path segment to be an ID for common vimeo.com/<id> URLs,
+    // but not on known non-video sections.
+    if (isLast && !isBlocked) {
+      candidates.push(cur);
+    }
+  }
+
+  if (!candidates.length) return null;
+  return candidates[candidates.length - 1];
 }
 
 export function isVimeoUrl(url) {
