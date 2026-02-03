@@ -38,6 +38,23 @@ export function normalizeUrlLike(s) {
     const host = url.hostname.toLowerCase().replace(/^www\./, '');
     const path = url.pathname || '/';
 
+    // Provider parity: strip common tracking parameters early, regardless of provider.
+    // We keep provider-specific params later (e.g. Vimeo h=..., Loom sid=..., time anchors).
+    const trackingPrefixes = ["utm_"];
+    const trackingKeys = new Set([
+      "fbclid",
+      "gclid",
+      "mc_cid",
+      "mc_eid",
+      "igshid",
+    ]);
+    for (const k of [...url.searchParams.keys()]) {
+      const lk = String(k || "").toLowerCase();
+      if (trackingKeys.has(lk) || trackingPrefixes.some(p => lk.startsWith(p))) {
+        url.searchParams.delete(k);
+      }
+    }
+
     // YouTube
     const isValidYoutubeId = (id) => /^[a-zA-Z0-9_-]{11}$/.test(String(id || '').trim());
 
