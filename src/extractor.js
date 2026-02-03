@@ -711,6 +711,24 @@ export async function extractFromUrl(rawUrl, options = {}) {
         );
       }
 
+      if (isYoutubeUrl(url)) {
+        lines.push(
+          '',
+          'YouTube notes:',
+          '- Some videos have captions disabled/unavailable; if so, you may need to transcribe from the downloaded media.',
+          '- Age-restricted/private videos may require cookies.'
+        );
+      }
+
+      if (isVimeoUrl(url)) {
+        lines.push(
+          '',
+          'Vimeo notes:',
+          '- Unlisted Vimeo links require the hash ("h") — normalize to https://vimeo.com/<id>?h=<hash> if needed.',
+          '- Private videos may require cookies.'
+        );
+      }
+
       result.text = lines.join('\n');
     }
 
@@ -739,6 +757,23 @@ export async function extractFromUrl(rawUrl, options = {}) {
           '',
           'Loom notes:',
           '- For private Loom shares, ensure the URL includes ?sid=... (session id) or pass cookies.'
+        );
+      }
+
+      if (isYoutubeUrl(url)) {
+        lines.push(
+          '',
+          'YouTube notes:',
+          '- Age-restricted/private videos may require cookies.'
+        );
+      }
+
+      if (isVimeoUrl(url)) {
+        lines.push(
+          '',
+          'Vimeo notes:',
+          '- Unlisted Vimeo links require the hash ("h") — normalize to https://vimeo.com/<id>?h=<hash> if needed.',
+          '- Private videos may require cookies.'
         );
       }
 
