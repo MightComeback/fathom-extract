@@ -12,15 +12,16 @@ Turn a Fathom, Loom, YouTube, or Vimeo link into an **actionable bug report brie
 git clone git@github.com:MightComeback/video-extract.git
 cd video-extract
 
-# install deps (this repo is dependency-light, but npm link expects a package install)
-npm install
+# install deps
+bun install
 
 # verify dependencies
+bun -v
 node -v
 ffmpeg -version
 
-# optional: make `fathom-extract` + `fathom2action` available globally
-npm link
+# optional: make CLIs available globally
+bun link
 ```
 
 ### Option B: no global install (explicit path)
