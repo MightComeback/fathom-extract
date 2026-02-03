@@ -7,7 +7,10 @@ export function isLoomUrl(url) {
 function isVttUrl(u) {
   const s = String(u || '').trim();
   if (!s) return false;
-  return /\.vtt(?:\?|#|$)/i.test(s) || /[?&](?:format|fmt)=vtt(?:&|$)/i.test(s);
+  return (
+    /\.vtt(?:\?|#|$)/i.test(s) ||
+    /[?&](?:format|fmt)=(?:vtt|webvtt)(?:&|$)/i.test(s)
+  );
 }
 
 function normalizeLoomAssetUrl(url, base = 'https://www.loom.com') {

@@ -117,6 +117,25 @@ test('extractLoomMetadataFromHtml - Transcript URL prefers linked video', () => 
   assert.strictEqual(meta.transcriptUrl, 'https://cdn.loom/transcript-main.vtt');
 });
 
+test('extractLoomMetadataFromHtml - Recognizes format=webvtt transcript URLs', () => {
+  const mockState = {
+    "RegularUserVideo:v1": {
+      "id": "v1",
+      "name": "Main Video",
+    },
+    "VideoTranscriptDetails:t_main": {
+      "videoId": "v1",
+      // Some Loom endpoints serve VTT without a .vtt extension.
+      "captions_source_url": "https://cdn.loom/transcript?id=abc&format=webvtt"
+    }
+  };
+
+  const html = `window.__APOLLO_STATE__ = ${JSON.stringify(mockState)};`;
+  const meta = extractLoomMetadataFromHtml(html);
+
+  assert.strictEqual(meta.transcriptUrl, 'https://cdn.loom/transcript?id=abc&format=webvtt');
+});
+
 test('extractLoomMetadataFromHtml - LD+JSON Fallback', () => {
   const html = `
     <html>
