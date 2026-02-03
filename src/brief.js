@@ -29,10 +29,17 @@ export function normalizeUrlLike(s) {
     const path = url.pathname || '/';
 
     // YouTube
+    // Preserve common time params when canonicalizing.
+    function youtubeTimeSuffix(u) {
+      const t = u.searchParams.get('t') || u.searchParams.get('start');
+      if (!t) return '';
+      return `&t=${encodeURIComponent(t)}`;
+    }
+
     if (host === 'youtu.be') {
       const id = path.split('/').filter(Boolean)[0];
       if (!id) return raw;
-      return `https://youtube.com/watch?v=${id}`;
+      return `https://youtube.com/watch?v=${id}${youtubeTimeSuffix(url)}`;
     }
     if (host === 'm.youtube.com' || host === 'music.youtube.com' || host === 'youtube.com') {
       // Normalize host.
@@ -41,13 +48,13 @@ export function normalizeUrlLike(s) {
       // Convert common path forms to canonical watch URLs.
       const m = path.match(/^\/(?:shorts|embed|live)\/(?<id>[^/?#]+)/i);
       if (m?.groups?.id) {
-        return `https://youtube.com/watch?v=${m.groups.id}`;
+        return `https://youtube.com/watch?v=${m.groups.id}${youtubeTimeSuffix(url)}`;
       }
 
       if (path.toLowerCase() === '/watch') {
         const v = url.searchParams.get('v');
         if (!v) return raw;
-        return `https://youtube.com/watch?v=${v}`;
+        return `https://youtube.com/watch?v=${v}${youtubeTimeSuffix(url)}`;
       }
 
       return raw;
@@ -66,7 +73,8 @@ export function normalizeUrlLike(s) {
     if (host === 'player.vimeo.com' || host === 'vimeo.com') {
       const m = path.match(/^(?:\/video)?\/(?<id>\d+)(?:\/)?$/i);
       if (m?.groups?.id) {
-        return `https://vimeo.com/${m.groups.id}`;
+        const h = url.searchParams.get('h');
+        return `https://vimeo.com/${m.groups.id}${h ? `?h=${encodeURIComponent(h)}` : ''}`;
       }
       return raw;
     }

@@ -59,7 +59,7 @@ test('normalizeUrlLike handles unusual brackets', () => {
 
 
 test('normalizeUrlLike canonicalizes common provider URL variants', () => {
-  assert.equal(normalizeUrlLike('https://youtu.be/abc123?t=30'), 'https://youtube.com/watch?v=abc123');
+  assert.equal(normalizeUrlLike('https://youtu.be/abc123?t=30'), 'https://youtube.com/watch?v=abc123&t=30');
   assert.equal(
     normalizeUrlLike('https://www.youtube.com/watch?v=abc123&feature=youtu.be'),
     'https://youtube.com/watch?v=abc123'
@@ -68,5 +68,5 @@ test('normalizeUrlLike canonicalizes common provider URL variants', () => {
 
   assert.equal(normalizeUrlLike('https://loom.com/embed/1234abcd'), 'https://loom.com/share/1234abcd');
 
-  assert.equal(normalizeUrlLike('https://player.vimeo.com/video/12345?h=abc'), 'https://vimeo.com/12345');
+  assert.equal(normalizeUrlLike('https://player.vimeo.com/video/12345?h=abc'), 'https://vimeo.com/12345?h=abc');
 });
