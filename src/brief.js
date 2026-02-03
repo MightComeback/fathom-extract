@@ -296,7 +296,7 @@ export function normalizeUrlLike(s) {
   //   Source: https://...
   //   Link: <https://...>
   //   URL: https://...
-  v0 = v0.replace(/^(?:source|fathom(?:\s*(?:link|recording|share|video))?|share(?:\s*link)?|link|url|recording|video(?:\s*link)?|youtube(?!-)(?:\s*link)?|vimeo(?!-)(?:\s*link)?|meeting|call|(?:google\s*meet|meet)(?:\s*link)?|(?:(?:microsoft|ms)\s*)?teams(?:\s*link)?|zoom(?:\s*link)?|webex(?:\s*link)?|loom(?:\s*link)?|(?:slack\s*)?huddle)\s*[:=\-–—]\s*/i, '').trim();
+  v0 = v0.replace(/^(?:source|fathom(?:\s*(?:link|recording|share|video))?|share(?:\s*link)?|link|url|recording|video(?:\s*link)?|youtube(?!-)(?:\s*(?:link|video|recording|share))?|vimeo(?!-)(?:\s*(?:link|video|recording|share))?|meeting|call|(?:google\s*meet|meet)(?:\s*link)?|(?:(?:microsoft|ms)\s*)?teams(?:\s*link)?|zoom(?:\s*link)?|webex(?:\s*link)?|loom(?:\s*(?:link|video|recording|share))?|(?:slack\s*)?huddle)\s*[:=\-–—]\s*/i, '').trim();
 
   // Strip common leading wrappers from chat/markdown copy/paste early so we can still
   // recognize wrapped URLs like: ( <https://...|label> )
