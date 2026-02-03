@@ -30,10 +30,22 @@ export function normalizeUrlLike(s) {
 
     // YouTube
     // Preserve common time params when canonicalizing.
+    // YouTube share links sometimes put the timestamp in the URL hash (e.g. youtu.be/...#t=1m2s).
     function youtubeTimeSuffix(u) {
-      const t = u.searchParams.get('t') || u.searchParams.get('start');
-      if (!t) return '';
-      return `&t=${encodeURIComponent(t)}`;
+      const fromQuery = u.searchParams.get('t') || u.searchParams.get('start');
+      if (fromQuery) return `&t=${encodeURIComponent(fromQuery)}`;
+
+      const hash = String(u.hash || '').replace(/^#/, '').trim();
+      if (!hash) return '';
+
+      // Common forms:
+      //   #t=1m2s
+      //   #start=62
+      // (We ignore other hash fragments.)
+      const hp = new URLSearchParams(hash);
+      const fromHash = hp.get('t') || hp.get('start');
+      if (!fromHash) return '';
+      return `&t=${encodeURIComponent(fromHash)}`;
     }
 
     if (host === 'youtu.be') {

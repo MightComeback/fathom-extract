@@ -60,6 +60,8 @@ test('normalizeUrlLike handles unusual brackets', () => {
 
 test('normalizeUrlLike canonicalizes common provider URL variants', () => {
   assert.equal(normalizeUrlLike('https://youtu.be/abc123?t=30'), 'https://youtube.com/watch?v=abc123&t=30');
+  assert.equal(normalizeUrlLike('https://youtu.be/abc123#t=1m2s'), 'https://youtube.com/watch?v=abc123&t=1m2s');
+  assert.equal(normalizeUrlLike('https://youtu.be/abc123#start=62'), 'https://youtube.com/watch?v=abc123&t=62');
   assert.equal(
     normalizeUrlLike('https://www.youtube.com/watch?v=abc123&feature=youtu.be'),
     'https://youtube.com/watch?v=abc123'
