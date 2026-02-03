@@ -30,6 +30,27 @@ World
   assert.equal(text, 'Hello World');
 });
 
+test('parseSimpleVtt ignores NOTE/STYLE blocks', (t) => {
+  const vtt = `WEBVTT
+X-TIMESTAMP-MAP=LOCAL:00:00:00.000,MPEGTS:0
+
+NOTE
+This is a note that should be ignored.
+Even across multiple lines.
+
+STYLE
+::cue { color: lime; }
+
+00:00.000 --> 00:01.000
+Hello
+
+00:01.000 --> 00:02.000
+World
+`;
+  const text = parseSimpleVtt(vtt);
+  assert.equal(text, 'Hello World');
+});
+
 test('parseSimpleVtt returns empty string for empty input', (t) => {
   assert.equal(parseSimpleVtt(''), '');
   assert.equal(parseSimpleVtt(null), '');

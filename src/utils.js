@@ -13,10 +13,34 @@ export function parseSimpleVtt(text) {
     .map((l) => l.trimEnd());
 
   const out = [];
+  let skipBlock = false;
+
   for (let i = 0; i < lines.length; i++) {
-    const line = lines[i].trim();
-    if (!line) continue;
+    const raw = lines[i] || '';
+    const line = raw.trim();
+
+    // Some VTT features include header blocks like:
+    //   NOTE ...
+    //   STYLE ...
+    //   REGION ...
+    // which can span multiple lines until the next blank line.
+    if (!line) {
+      if (skipBlock) skipBlock = false;
+      continue;
+    }
+
+    if (skipBlock) continue;
+
     if (i === 0 && /^WEBVTT\b/i.test(line)) continue;
+
+    // HLS/WebVTT metadata.
+    if (/^X-TIMESTAMP-MAP=/i.test(line)) continue;
+
+    // Block headers (skip until blank line).
+    if (/^(?:NOTE|STYLE|REGION)\b/i.test(line)) {
+      skipBlock = true;
+      continue;
+    }
 
     // Skip cue identifiers (a line of digits) if it's followed by a timing line.
     if (/^\d+$/.test(line) && i + 1 < lines.length && /-->/.test(lines[i + 1])) {
