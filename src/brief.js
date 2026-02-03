@@ -138,8 +138,22 @@ export function normalizeUrlLike(s) {
       //   https://vimeo.com/channels/foo/123
       //   https://vimeo.com/ondemand/bar/123
       //   https://player.vimeo.com/video/123
-      // Normalize everything to https://vimeo.com/<id>[?h=...]
+      // Normalize everything to https://vimeo.com/<id>[?h=...][#t=...]
       let id = '';
+
+      // Preserve common deep-link time anchors.
+      // Vimeo shares typically use hash fragments like #t=1m2s, but we've also seen ?t=... in the wild.
+      function vimeoTimeSuffix(u) {
+        const fromQuery = u.searchParams.get('t');
+        if (fromQuery) return `#t=${encodeURIComponent(fromQuery)}`;
+
+        const hash = String(u.hash || '').replace(/^#/, '').trim();
+        if (!hash) return '';
+        const hp = new URLSearchParams(hash);
+        const fromHash = hp.get('t');
+        if (!fromHash) return '';
+        return `#t=${encodeURIComponent(fromHash)}`;
+      }
 
       // First: common direct forms.
       const direct = path.match(/^(?:\/video)?\/(?<id>\d+)(?:\/)?$/i);
@@ -169,7 +183,8 @@ export function normalizeUrlLike(s) {
           if (next && /^[a-zA-Z0-9]+$/.test(next)) h = next;
         }
 
-        return `https://vimeo.com/${id}${h ? `?h=${encodeURIComponent(h)}` : ''}`;
+        const time = vimeoTimeSuffix(url);
+        return `https://vimeo.com/${id}${h ? `?h=${encodeURIComponent(h)}` : ''}${time}`;
       }
       return raw;
     }
