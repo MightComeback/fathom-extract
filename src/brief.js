@@ -103,6 +103,14 @@ export function normalizeUrlLike(s) {
         return `https://youtube.com/watch?v=${m.groups.id}${youtubeTimeSuffix(url)}`;
       }
 
+      // Some YouTube URLs include a channel handle segment:
+      //   /@SomeChannel/shorts/<id>
+      //   /@SomeChannel/live/<id>
+      const mHandle = path.match(/^\/@[^/]+\/(?:shorts|live)\/(?<id>[^/?#]+)/i);
+      if (mHandle?.groups?.id && isValidYoutubeId(mHandle.groups.id)) {
+        return `https://youtube.com/watch?v=${mHandle.groups.id}${youtubeTimeSuffix(url)}`;
+      }
+
       if (/^\/watch\/?$/i.test(path)) {
         const v = url.searchParams.get('v');
         if (!isValidYoutubeId(v)) return raw;

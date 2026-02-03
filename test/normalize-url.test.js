@@ -98,6 +98,8 @@ test('normalizeUrlLike canonicalizes common provider URL variants', () => {
     `https://youtube.com/watch?v=${id}&t=30s`
   );
   assert.equal(normalizeUrlLike(`https://youtube.com/shorts/${id}?si=xyz`), `https://youtube.com/watch?v=${id}`);
+  assert.equal(normalizeUrlLike(`https://youtube.com/@SomeChannel/shorts/${id}?feature=share`), `https://youtube.com/watch?v=${id}`);
+  assert.equal(normalizeUrlLike(`https://youtube.com/@SomeChannel/live/${id}?t=30`), `https://youtube.com/watch?v=${id}&t=30`);
   assert.equal(normalizeUrlLike(`https://youtube.com/v/${id}`), `https://youtube.com/watch?v=${id}`);
   assert.equal(normalizeUrlLike(`https://www.youtube-nocookie.com/embed/${id}`), `https://youtube.com/watch?v=${id}`);
   assert.equal(normalizeUrlLike(`youtube-nocookie.com/embed/${id}`), `https://youtube.com/watch?v=${id}`);

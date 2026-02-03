@@ -56,8 +56,14 @@ export function extractYoutubeId(url) {
   if (v && /^[a-zA-Z0-9_-]{11}$/.test(v)) return v;
 
   // /embed/<id>, /shorts/<id>, /live/<id>, /v/<id>
+  // Also accept handle-based URLs like:
+  //   /@SomeChannel/shorts/<id>
+  //   /@SomeChannel/live/<id>
   const m = u.pathname.match(/\/(?:embed|shorts|live|v)\/([a-zA-Z0-9_-]{11})\b/);
   if (m) return m[1];
+
+  const mHandle = u.pathname.match(/\/@[^/]+\/(?:shorts|live)\/([a-zA-Z0-9_-]{11})\b/);
+  if (mHandle) return mHandle[1];
 
   return null;
 }
