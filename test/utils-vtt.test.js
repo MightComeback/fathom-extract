@@ -51,6 +51,20 @@ World
   assert.equal(text, 'Hello World');
 });
 
+test('parseSimpleVtt strips common WebVTT markup + decodes basic entities', (t) => {
+  const vtt = `WEBVTT
+
+00:00:01.000 --> 00:00:04.000
+<c.colorE5E5E5>Hello &amp; welcome</c>
+
+00:00:04.000 --> 00:00:08.000
+<v Speaker>Look &lt;here&gt; &nbsp; now</v>
+`;
+
+  const text = parseSimpleVtt(vtt);
+  assert.equal(text, 'Hello & welcome Look <here> now');
+});
+
 test('parseSimpleVtt returns empty string for empty input', (t) => {
   assert.equal(parseSimpleVtt(''), '');
   assert.equal(parseSimpleVtt(null), '');

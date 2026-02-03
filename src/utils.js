@@ -50,7 +50,22 @@ export function parseSimpleVtt(text) {
     // Skip timing lines.
     if (/-->/.test(line)) continue;
 
-    out.push(line);
+    // Many provider captions (YouTube/Vimeo/Loom) include lightweight markup in WebVTT.
+    // Strip the most common tags to improve transcript quality.
+    let cleaned = line.replace(/<[^>]+>/g, '');
+
+    // Decode a small set of common HTML entities.
+    // Keep this intentionally small + deterministic for tests.
+    cleaned = cleaned
+      .replace(/&nbsp;/gi, ' ')
+      .replace(/&amp;/gi, '&')
+      .replace(/&lt;/gi, '<')
+      .replace(/&gt;/gi, '>')
+      .replace(/&quot;/gi, '"')
+      .replace(/&#39;/g, "'");
+
+    cleaned = cleaned.replace(/\s+/g, ' ').trim();
+    if (cleaned) out.push(cleaned);
   }
 
   // Merge with spaces; this matches the unit test expectations.
