@@ -214,6 +214,12 @@ export function parseLoomTranscript(text) {
   try {
     const data = JSON.parse(text);
 
+    // Common Loom transcript JSON shapes we've seen in the wild:
+    //  - { paragraphs: [{ startTime, text }, ...] }
+    //  - { segments: [{ start, text }, ...] }
+    //  - { transcript: [{ start, end, text }, ...] }
+    //  - [{ startTime, text }, ...] (flat array)
+
     if (data && Array.isArray(data.paragraphs)) {
       return data.paragraphs.map((p) => `${formatTime(p.startTime)} ${p.text}`).join('\n');
     }
@@ -221,6 +227,16 @@ export function parseLoomTranscript(text) {
     // Some Loom exports use {segments:[{start,text}]}.
     if (data && Array.isArray(data.segments)) {
       return data.segments.map((s) => `${formatTime(s.start)} ${s.text}`).join('\n');
+    }
+
+    // Some Loom transcript endpoints return {transcript:[{start,end,text}]}.
+    if (data && Array.isArray(data.transcript)) {
+      return data.transcript.map((t) => `${formatTime(t.start ?? t.startTime)} ${t.text}`).join('\n');
+    }
+
+    // As a last resort, accept a flat array of objects.
+    if (Array.isArray(data) && data.length && typeof data[0] === 'object') {
+      return data.map((t) => `${formatTime(t.start ?? t.startTime)} ${t.text}`).join('\n');
     }
   } catch {
     // ignore
