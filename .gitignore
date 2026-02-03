@@ -22,3 +22,4 @@ package-lock.json
 
 # local automation state
 .commit_url
+.hakky-last-commit-url
