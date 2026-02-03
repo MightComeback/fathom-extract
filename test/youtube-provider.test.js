@@ -11,7 +11,9 @@ test('isYoutubeUrl identifies valid YouTube URLs', () => {
     'https://youtube.com/shorts/dQw4w9WgXcQ',
     'https://www.youtube.com/live/dQw4w9WgXcQ',
     // With extra params
-    'https://www.youtube.com/watch?v=dQw4w9WgXcQ&t=123s'
+    'https://www.youtube.com/watch?v=dQw4w9WgXcQ&t=123s',
+    // Attribution links (common from mobile shares)
+    'https://www.youtube.com/attribution_link?a=1&u=%2Fwatch%3Fv%3DdQw4w9WgXcQ%26feature%3Dshare'
   ];
   
   valid.forEach(url => {
@@ -38,6 +40,10 @@ test('extractYoutubeId extracts 11-char ID', () => {
   assert.strictEqual(extractYoutubeId('https://www.youtube.com/watch?v=dQw4w9WgXcQ'), 'dQw4w9WgXcQ');
   assert.strictEqual(extractYoutubeId('https://youtu.be/dQw4w9WgXcQ'), 'dQw4w9WgXcQ');
   assert.strictEqual(extractYoutubeId('https://www.youtube.com/embed/dQw4w9WgXcQ?start=1'), 'dQw4w9WgXcQ');
+  assert.strictEqual(
+    extractYoutubeId('https://www.youtube.com/attribution_link?a=1&u=%2Fwatch%3Fv%3DdQw4w9WgXcQ%26feature%3Dshare'),
+    'dQw4w9WgXcQ'
+  );
 });
 
 test('extractYoutubeMetadataFromHtml parses initial player response', () => {

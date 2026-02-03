@@ -115,7 +115,18 @@ export function normalizeUrlLike(s) {
       }
 
       if (id) {
-        const h = url.searchParams.get('h');
+        // Unlisted Vimeo URLs often look like: https://vimeo.com/<id>/<hash>
+        // Preserve that hash by normalizing it into the canonical ?h=... form.
+        let h = url.searchParams.get('h') || '';
+
+        if (!h) {
+          const segs = path.split('/').filter(Boolean);
+          // Find the segment immediately after the numeric id (if any).
+          const idx = segs.findIndex((x) => x === id);
+          const next = idx !== -1 ? segs[idx + 1] : '';
+          if (next && /^[a-zA-Z0-9]+$/.test(next)) h = next;
+        }
+
         return `https://vimeo.com/${id}${h ? `?h=${encodeURIComponent(h)}` : ''}`;
       }
       return raw;

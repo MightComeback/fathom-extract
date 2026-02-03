@@ -25,6 +25,24 @@ export function extractYoutubeId(url) {
   // Accept youtube.com subdomains (m., music., etc) and youtube-nocookie.com embeds.
   if (!/(^|\.)youtube\.com$/i.test(host) && !/(^|\.)youtube-nocookie\.com$/i.test(host)) return null;
 
+  // /attribution_link?...&u=/watch%3Fv%3D<id>%26...
+  // These are common when sharing from mobile apps.
+  if (u.pathname.toLowerCase() === '/attribution_link') {
+    const encoded = u.searchParams.get('u');
+    if (encoded) {
+      try {
+        const decoded = decodeURIComponent(encoded);
+        const inner = decoded.startsWith('http')
+          ? decoded
+          : `https://youtube.com${decoded.startsWith('/') ? '' : '/'}${decoded}`;
+        const id = extractYoutubeId(inner);
+        if (id) return id;
+      } catch {
+        // ignore
+      }
+    }
+  }
+
   // watch?v=<id>
   const v = u.searchParams.get('v');
   if (v && /^[a-zA-Z0-9_-]{11}$/.test(v)) return v;
