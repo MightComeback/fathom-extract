@@ -6,9 +6,9 @@ import { spawn } from 'node:child_process';
 import { normalizeUrlLike } from './brief.js';
 import { parseSimpleVtt } from './utils.js';
 import { extractFathomTranscriptUrl } from './providers/fathom.js';
-import { isYoutubeUrl, extractYoutubeMetadataFromHtml, fetchYoutubeMediaUrl } from './providers/youtube.js';
+import { isYoutubeUrl, extractYoutubeMetadataFromHtml, fetchYoutubeOembed, fetchYoutubeMediaUrl } from './providers/youtube.js';
 import { isVimeoUrl, extractVimeoMetadataFromHtml } from './providers/vimeo.js';
-import { isLoomUrl, extractLoomMetadataFromHtml, parseLoomTranscript } from './providers/loom.js';
+import { isLoomUrl, extractLoomMetadataFromHtml, fetchLoomOembed, parseLoomTranscript } from './providers/loom.js';
 
 function oneLine(s) {
   return String(s || '')
@@ -407,6 +407,12 @@ async function bestEffortExtract({ url, cookie, referer, userAgent }) {
       const meta = extractLoomMetadataFromHtml(html) || {};
       if (meta.title && !title) title = meta.title;
 
+      // Fallback: oEmbed is lightweight and often works even when the HTML is behind auth/consent walls.
+      if (!title) {
+        const o = await fetchLoomOembed(url);
+        if (o?.title) title = String(o.title);
+      }
+
       // Loom transcript can be inlined in the Apollo state.
       if (meta.transcriptText && (!text || text === normalizedText)) {
         text = String(meta.transcriptText);
@@ -422,6 +428,12 @@ async function bestEffortExtract({ url, cookie, referer, userAgent }) {
     } else if (isYoutubeUrl(url)) {
       const meta = extractYoutubeMetadataFromHtml(html) || {};
       if (meta.title && !title) title = meta.title;
+
+      // Fallback: YouTube oEmbed can provide title/author even when ytInitialPlayerResponse isn't present.
+      if (!title) {
+        const o = await fetchYoutubeOembed(url);
+        if (o?.title) title = String(o.title);
+      }
 
       // Caption tracks are usually VTT.
       if (meta.transcriptUrl && (!text || text === normalizedText)) {
