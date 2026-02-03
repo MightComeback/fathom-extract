@@ -463,7 +463,14 @@ async function bestEffortExtract({ url, cookie, referer, userAgent }) {
 
       if (shouldResolveMediaUrl) {
         const m = await fetchYoutubeMediaUrl(url);
-        if (m) mediaUrl = m;
+        if (m) {
+          mediaUrl = m;
+        } else if (!mediaUrl) {
+          // Clear failure mode: YouTube pages often only expose a player/embed URL.
+          // If ytdl-core can't resolve a downloadable media URL, keep an actionable reason.
+          mediaUrlRejectReason =
+            'Unable to resolve a downloadable YouTube media URL (captions may still work). Try passing cookies for private/age-restricted videos or provide a different URL.';
+        }
       }
     } else if (isVimeoUrl(url)) {
       const meta = extractVimeoMetadataFromHtml(html) || {};
