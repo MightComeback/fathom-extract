@@ -123,9 +123,16 @@ export function normalizeUrlLike(s) {
       const m = path.match(/^\/(?:share|embed|v|recording|i|s)\/(?<id>[^/?#]+)/i);
       if (m?.groups?.id) {
         // Some Loom share links include a sid (session id) that may be required for access.
-        // Preserve it, but drop other tracking params.
+        // Loom also supports timestamp deep-links in some contexts (t/start).
+        // Preserve sid + t/start (drop other tracking params).
         const sid = url.searchParams.get('sid') || '';
-        return `https://loom.com/share/${m.groups.id}${sid ? `?sid=${encodeURIComponent(sid)}` : ''}`;
+        const t = url.searchParams.get('t') || url.searchParams.get('start') || '';
+
+        const params = [];
+        if (sid) params.push(`sid=${encodeURIComponent(sid)}`);
+        if (t) params.push(`t=${encodeURIComponent(t)}`);
+
+        return `https://loom.com/share/${m.groups.id}${params.length ? `?${params.join('&')}` : ''}`;
       }
       return raw;
     }
