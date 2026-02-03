@@ -15,7 +15,13 @@ export function normalizeUrlLike(s) {
   if (!v0) return '';
 
   function canonicalizeKnownProviderUrl(u) {
-    const raw = String(u || '').trim();
+    let raw = String(u || '').trim();
+    if (!raw) return raw;
+
+    // Accept protocol-relative URLs (e.g. //youtube.com/watch?v=...).
+    // These frequently show up in HTML/markdown copy/paste.
+    if (raw.startsWith('//')) raw = `https:${raw}`;
+
     if (!/^https?:\/\//i.test(raw)) return raw;
 
     let url;
@@ -265,7 +271,7 @@ export function normalizeUrlLike(s) {
   if (slack) {
     const u = String(slack[1] || '').trim();
     if (/^data:/i.test(u)) return u;
-    if (/^https?:\/\//i.test(u)) return canonicalizeKnownProviderUrl(u);
+    if (/^(?:https?:)?\/\//i.test(u)) return canonicalizeKnownProviderUrl(u);
     const bare = normalizeBareKnownUrl(u);
     if (bare) return canonicalizeKnownProviderUrl(bare);
   }
@@ -274,7 +280,7 @@ export function normalizeUrlLike(s) {
   if (angle) {
     const u = String(angle[1] || '').trim();
     if (/^data:/i.test(u)) return u;
-    if (/^https?:\/\//i.test(u)) return canonicalizeKnownProviderUrl(u);
+    if (/^(?:https?:)?\/\//i.test(u)) return canonicalizeKnownProviderUrl(u);
     const bare = normalizeBareKnownUrl(u);
     if (bare) return canonicalizeKnownProviderUrl(bare);
   }
@@ -290,7 +296,7 @@ export function normalizeUrlLike(s) {
   if (md) {
     const u = String(md.groups?.u || '').trim();
     if (/^data:/i.test(u)) return u;
-    if (/^https?:\/\//i.test(u)) return canonicalizeKnownProviderUrl(u);
+    if (/^(?:https?:)?\/\//i.test(u)) return canonicalizeKnownProviderUrl(u);
     const bare = normalizeBareKnownUrl(u);
     if (bare) return canonicalizeKnownProviderUrl(bare);
     return u;
@@ -300,7 +306,7 @@ export function normalizeUrlLike(s) {
   // Also strip "!" and "?" which frequently get appended in chat.
   // Include a few common Unicode punctuation variants (…, fullwidth !/? and Chinese/Japanese punctuation).
   // Include backticks for cases like: `https://example.com`
-  if (/^(?:https?:\/\/|data:)/i.test(v0)) {
+  if (/^(?:https?:\/\/|\/\/|data:)/i.test(v0)) {
     // Common copy/paste pattern: "https://... (Fathom)".
     // Only strip parenthetical suffixes when separated by whitespace to avoid mangling URLs
     // that legitimately contain parentheses.

@@ -70,6 +70,8 @@ test('normalizeUrlLike canonicalizes common provider URL variants', () => {
   const id = 'dQw4w9WgXcQ';
 
   assert.equal(normalizeUrlLike(`https://youtu.be/${id}?t=30`), `https://youtube.com/watch?v=${id}&t=30`);
+  // Provider parity: accept protocol-relative URLs too.
+  assert.equal(normalizeUrlLike(`//youtu.be/${id}?t=30`), `https://youtube.com/watch?v=${id}&t=30`);
   assert.equal(normalizeUrlLike(`https://youtu.be/${id}#t=1m2s`), `https://youtube.com/watch?v=${id}&t=1m2s`);
   assert.equal(normalizeUrlLike(`https://youtu.be/${id}#start=62`), `https://youtube.com/watch?v=${id}&t=62`);
   assert.equal(normalizeUrlLike(`https://www.youtube.com/watch?v=${id}&feature=youtu.be`), `https://youtube.com/watch?v=${id}`);
@@ -106,6 +108,7 @@ test('normalizeUrlLike canonicalizes common provider URL variants', () => {
     'https://loom.com/share/1234abcd?sid=deadbeef&t=62'
   );
   assert.equal(normalizeUrlLike('https://share.loom.com/share/1234abcd'), 'https://loom.com/share/1234abcd');
+  assert.equal(normalizeUrlLike('//share.loom.com/share/1234abcd'), 'https://loom.com/share/1234abcd');
   assert.equal(normalizeUrlLike('share.loom.com/share/1234abcd'), 'https://loom.com/share/1234abcd');
   assert.equal(normalizeUrlLike('https://www.loom.com/v/abc-123'), 'https://loom.com/share/abc-123');
   assert.equal(normalizeUrlLike('https://www.loom.com/recording/abc-123'), 'https://loom.com/share/abc-123');
@@ -113,6 +116,7 @@ test('normalizeUrlLike canonicalizes common provider URL variants', () => {
   assert.equal(normalizeUrlLike('https://www.loom.com/s/abc_123'), 'https://loom.com/share/abc_123');
 
   assert.equal(normalizeUrlLike('https://player.vimeo.com/video/12345?h=abc'), 'https://vimeo.com/12345?h=abc');
+  assert.equal(normalizeUrlLike('//player.vimeo.com/video/12345?h=abc'), 'https://vimeo.com/12345?h=abc');
   assert.equal(normalizeUrlLike('https://vimeo.com/12345/abcdef'), 'https://vimeo.com/12345?h=abcdef');
   assert.equal(normalizeUrlLike('https://player.vimeo.com/video/12345/abcdef'), 'https://vimeo.com/12345?h=abcdef');
   assert.equal(normalizeUrlLike('https://vimeo.com/12345#t=62'), 'https://vimeo.com/12345#t=62');
