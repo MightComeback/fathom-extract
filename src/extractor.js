@@ -694,7 +694,7 @@ export function extractFromStdin({ content, source } = {}) {
       /^https?:\/\//i.test(l) ||
       /\bfathom\.video\//i.test(l) ||
       /\bloom\.com\//i.test(l) ||
-      /\b(?:youtube\.com|youtu\.be)\//i.test(l) ||
+      /\b(?:(?:m\.|music\.)?youtube\.com|youtube-nocookie\.com|youtu\.be)\//i.test(l) ||
       /\bvimeo\.com\//i.test(l) ||
       /\bplayer\.vimeo\.com\//i.test(l)
     )) {

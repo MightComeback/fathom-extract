@@ -425,6 +425,17 @@ test('extractFromStdin accepts a bare youtu.be URL on its own line (no Source: h
   assert.equal(out.source, 'https://youtube.com/watch?v=dQw4w9WgXcQ');
 });
 
+test('extractFromStdin accepts a bare youtube-nocookie.com URL on its own line (no Source: header)', () => {
+  const input = [
+    'youtube-nocookie.com/embed/dQw4w9WgXcQ',
+    'Title: youtube-nocookie bare line',
+    '00:01 Alice: it crashes',
+  ].join('\n');
+
+  const out = extractFromStdin({ content: input, source: 'stdin' });
+  assert.equal(out.source, 'https://youtube.com/watch?v=dQw4w9WgXcQ');
+});
+
 test('extractFromStdin accepts a bare Vimeo URL on its own line (no Source: header)', () => {
   const input = [
     'vimeo.com/123456789',
