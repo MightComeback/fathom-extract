@@ -26,10 +26,14 @@ bun link
 
 ```bash
 # brief generator
-node ./bin/video-brief.js --help
+bun ./bin/video-brief.js --help
 
 # extractor
-node ./bin/video-extract.js --help
+bun ./bin/video-extract.js --help
+
+# (on macOS/Linux you can also run them directly after cloning)
+# chmod +x ./bin/*.js
+# ./bin/video-brief.js --help
 ```
 
 ## Requirements
