@@ -471,7 +471,27 @@ async function bestEffortExtract({ url, cookie, referer, userAgent }) {
       if (meta?.transcriptUrl && (!text || text === normalizedText)) {
         const tUrl = resolveUrl(meta.transcriptUrl, url);
         const { body } = await fetchText(tUrl, { headers });
-        text = parseSimpleVtt(body);
+
+        // Vimeo text_tracks can be VTT, but we've also seen JSON cue lists.
+        // Try JSON first, then fall back to VTT parsing.
+        try {
+          const json = JSON.parse(body);
+          const items = Array.isArray(json)
+            ? json
+            : Array.isArray(json?.transcript)
+              ? json.transcript
+              : Array.isArray(json?.captions)
+                ? json.captions
+                : [];
+          const joined = items
+            .map((it) => String(it?.text || '').trim())
+            .filter(Boolean)
+            .join(' ')
+            .trim();
+          text = joined || parseSimpleVtt(body);
+        } catch {
+          text = parseSimpleVtt(body);
+        }
       }
     }
   } catch {
