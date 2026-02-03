@@ -1266,12 +1266,54 @@ function formatSeconds(s) {
   return `${String(m).padStart(2, '0')}:${String(r).padStart(2, '0')}`;
 }
 
-function extractTimestampFromUrl(url) {
-  const match = String(url || '').match(/[?&]t=(\d+)/);
-  if (match) {
-    return formatSeconds(match[1]);
+function parseTimeToSeconds(input) {
+  const raw = String(input || '').trim();
+  if (!raw) return null;
+
+  // Plain seconds: 65, 65s
+  const mSec = raw.match(/^(\d+)(?:s)?$/i);
+  if (mSec) return Number(mSec[1]);
+
+  // YouTube/Vimeo style: 1h2m3s, 2m3s, 90s
+  const mHms = raw.match(/^(?:(\d+)h)?(?:(\d+)m)?(?:(\d+)s)?$/i);
+  if (mHms && (mHms[1] || mHms[2] || mHms[3])) {
+    const h = Number(mHms[1] || 0);
+    const m = Number(mHms[2] || 0);
+    const s = Number(mHms[3] || 0);
+    return h * 3600 + m * 60 + s;
   }
+
   return null;
+}
+
+function extractTimestampFromUrl(url) {
+  const s = String(url || '');
+  if (!s) return null;
+
+  let u;
+  try {
+    u = new URL(s);
+  } catch {
+    return null;
+  }
+
+  const fromQuery = u.searchParams.get('t') || u.searchParams.get('start');
+  const fromHash = (() => {
+    const h = String(u.hash || '').replace(/^#/, '').trim();
+    if (!h) return '';
+
+    // Common forms:
+    //  - #t=1m2s
+    //  - #start=62
+    //  - #t=62
+    const hp = new URLSearchParams(h);
+    return hp.get('t') || hp.get('start') || '';
+  })();
+
+  const rawTime = fromQuery || fromHash;
+  const seconds = parseTimeToSeconds(rawTime);
+  if (seconds === null) return null;
+  return formatSeconds(seconds);
 }
 
 export function renderBrief({

@@ -11,3 +11,21 @@ test('renderBrief extracts timestamp from deep-linked URL', () => {
 
   assert.match(brief, /## Timestamps[\s\S]*- 01:05 \(from URL\) —/);
 });
+
+test('renderBrief extracts h/m/s timestamp formats from URL (youtube style)', () => {
+  const brief = renderBrief({
+    source: 'https://youtube.com/watch?v=abcdefghijk&t=1m2s',
+    transcript: '00:01 Hello'
+  });
+
+  assert.match(brief, /## Timestamps[\s\S]*- 01:02 \(from URL\) —/);
+});
+
+test('renderBrief extracts timestamp from URL hash fragment (vimeo style)', () => {
+  const brief = renderBrief({
+    source: 'https://vimeo.com/123456789#t=90s',
+    transcript: '00:01 Hello'
+  });
+
+  assert.match(brief, /## Timestamps[\s\S]*- 01:30 \(from URL\) —/);
+});
