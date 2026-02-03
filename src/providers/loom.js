@@ -7,7 +7,8 @@ export function extractLoomId(url) {
   if (!s) return null;
 
   // Ensure we can parse even if the user omitted scheme.
-  const withScheme = /^https?:\/\//i.test(s) ? s : `https://${s}`;
+  // Also accept protocol-relative URLs like "//loom.com/share/...".
+  const withScheme = /^(?:https?:)?\/\//i.test(s) ? (s.startsWith('//') ? `https:${s}` : s) : `https://${s}`;
 
   let u;
   try {

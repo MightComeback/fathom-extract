@@ -48,6 +48,11 @@ test('extractLoomId works with scheme-less URLs', (t) => {
   assert.strictEqual(extractLoomId('www.loom.com/v/xyz789'), 'xyz789');
 });
 
+test('extractLoomId works with protocol-relative URLs', (t) => {
+  assert.strictEqual(extractLoomId('//loom.com/share/abcdef123'), 'abcdef123');
+  assert.strictEqual(isLoomUrl('//share.loom.com/share/1234567890abcdef'), true);
+});
+
 test('isLoomUrl allows IDs with underscores', (t) => {
   assert.strictEqual(isLoomUrl('https://www.loom.com/share/_start_with_underscore'), true);
 });
