@@ -131,7 +131,8 @@ export function normalizeUrlLike(s) {
     }
 
     // Vimeo
-    if (host === 'player.vimeo.com' || host === 'vimeo.com') {
+    // Accept subdomains like staffpicks.vimeo.com as well as player.vimeo.com.
+    if (host === 'player.vimeo.com' || host === 'vimeo.com' || host.endsWith('.vimeo.com')) {
       // Vimeo has many URL shapes:
       //   https://vimeo.com/123
       //   https://vimeo.com/channels/foo/123
