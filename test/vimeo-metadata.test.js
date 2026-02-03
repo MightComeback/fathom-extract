@@ -82,6 +82,31 @@ test('extractVimeoMetadataFromHtml normalizes scheme-less and relative asset URL
   assert.strictEqual(result.transcriptUrl, 'https://vimeo.com/texttrack/subs.vtt');
 });
 
+test('extractVimeoMetadataFromHtml adds format=vtt to texttrack transcript endpoints when missing', () => {
+  const mockConfig = {
+    clip: { name: 'Vimeo TextTrack Endpoint', duration: { raw: 10 } },
+    request: {
+      text_tracks: [
+        // Some pages expose captions via a /texttrack endpoint without an explicit format.
+        { url: 'https://vimeo.com/texttrack/12345', lang: 'en', name: 'English' },
+      ],
+    },
+  };
+
+  const html = `
+    <html>
+      <script>
+        window.vimeo = window.vimeo || {};
+        window.vimeo.clip_page_config = ${JSON.stringify(mockConfig)};
+      </script>
+    </html>
+  `;
+
+  const result = extractVimeoMetadataFromHtml(html);
+  assert.ok(result);
+  assert.strictEqual(result.transcriptUrl, 'https://vimeo.com/texttrack/12345?format=vtt');
+});
+
 test('extractVimeoMetadataFromHtml falls back to HLS manifest when progressive MP4 is missing', () => {
   const mockConfig = {
     clip: {

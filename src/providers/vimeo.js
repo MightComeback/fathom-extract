@@ -186,6 +186,28 @@ function normalizeVimeoAssetUrl(url, base = 'https://vimeo.com') {
   return v;
 }
 
+function ensureVimeoVtt(url) {
+  const raw = String(url || '').trim();
+  if (!raw) return '';
+
+  // If it's already a direct VTT asset or explicitly requests VTT, keep as-is.
+  if (/\.vtt(?:\?|#|$)/i.test(raw)) return raw;
+  if (/[?&](?:format|fmt)=vtt(?:&|$)/i.test(raw)) return raw;
+
+  // Vimeo sometimes serves captions from /texttrack/... endpoints.
+  // Force VTT for consistent downstream parsing.
+  if (!/\/texttrack\b/i.test(raw)) return raw;
+
+  try {
+    const u = new URL(raw);
+    u.searchParams.set('format', 'vtt');
+    return u.toString();
+  } catch {
+    const sep = raw.includes('?') ? '&' : '?';
+    return `${raw}${sep}format=vtt`;
+  }
+}
+
 function extractBalancedJsonObject(source, startIndex) {
   // startIndex must point at '{'
   let depth = 0;
@@ -273,7 +295,7 @@ export function extractVimeoMetadataFromHtml(html) {
   const mediaUrl = normalizeVimeoAssetUrl(best?.url || hlsUrl) || undefined;
 
   const tt = pickBestTextTrack(cfg?.request?.text_tracks || []);
-  const transcriptUrl = normalizeVimeoAssetUrl(tt?.url) || undefined;
+  const transcriptUrl = normalizeVimeoAssetUrl(ensureVimeoVtt(tt?.url)) || undefined;
 
   // Description: prefer og:description (most reliable), otherwise fall back to config clip description.
   // Vimeo has used a few shapes over time:
