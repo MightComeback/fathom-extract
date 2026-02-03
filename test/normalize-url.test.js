@@ -128,4 +128,6 @@ test('normalizeUrlLike canonicalizes common provider URL variants', () => {
 
   // Provider parity: accept any YouTube subdomain for bare links too.
   assert.equal(normalizeUrlLike(`gaming.youtube.com/watch?v=${id}`), `https://youtube.com/watch?v=${id}`);
+  assert.equal(normalizeUrlLike(`m.youtube.com/watch?v=${id}`), `https://youtube.com/watch?v=${id}`);
+  assert.equal(normalizeUrlLike(`music.youtube.com/watch?v=${id}`), `https://youtube.com/watch?v=${id}`);
 });
