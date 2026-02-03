@@ -116,6 +116,36 @@ test('extractVimeoMetadataFromHtml falls back to HLS manifest when progressive M
   assert.strictEqual(result.mediaUrl, 'https://cdn.vimeo.com/manifest.m3u8');
 });
 
+test('extractVimeoMetadataFromHtml prefers non-auto English VTT text tracks', () => {
+  const mockConfig = {
+    clip: {
+      name: 'Vimeo Track Preference',
+      duration: { raw: 10 },
+    },
+    request: {
+      text_tracks: [
+        { url: 'https://cdn.vimeo.com/subs-auto.vtt', lang: 'en', name: 'English (auto)' },
+        { url: 'https://cdn.vimeo.com/subs.json', lang: 'en', name: 'English' },
+        { url: 'https://cdn.vimeo.com/subs.vtt', lang: 'en', name: 'English' },
+        { url: 'https://cdn.vimeo.com/subs-es.vtt', lang: 'es', name: 'Español' },
+      ],
+    },
+  };
+
+  const html = `
+    <html>
+      <script>
+        window.vimeo = window.vimeo || {};
+        window.vimeo.clip_page_config = ${JSON.stringify(mockConfig)};
+      </script>
+    </html>
+  `;
+
+  const result = extractVimeoMetadataFromHtml(html);
+  assert.ok(result);
+  assert.strictEqual(result.transcriptUrl, 'https://cdn.vimeo.com/subs.vtt');
+});
+
 test('extractVimeoMetadataFromHtml returns null if config missing', () => {
   assert.strictEqual(extractVimeoMetadataFromHtml('<html></html>'), null);
 });

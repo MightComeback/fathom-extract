@@ -47,8 +47,26 @@ function pickBestProgressive(progressive = []) {
 
 function pickBestTextTrack(textTracks = []) {
   if (!Array.isArray(textTracks) || textTracks.length === 0) return null;
-  const en = textTracks.find((t) => String(t.lang || '').toLowerCase().startsWith('en'));
-  return en || textTracks[0];
+
+  const norm = (t) => {
+    const lang = String(t?.lang || '').toLowerCase();
+    const name = String(t?.name || '').toLowerCase();
+    const url = String(t?.url || '');
+
+    const isEn = lang.startsWith('en');
+    const isAuto = name.includes('auto') || name.includes('automatic') || name.includes('asr');
+    const isVtt = /\.vtt(?:\?|#|$)/i.test(url);
+
+    // Higher is better.
+    // Prefer English, prefer non-auto tracks, prefer VTT (most consistent parser/quality).
+    const score = (isEn ? 100 : 0) + (isAuto ? 0 : 10) + (isVtt ? 2 : 0);
+
+    return { t, score };
+  };
+
+  return [...textTracks]
+    .map(norm)
+    .sort((a, b) => b.score - a.score)[0]?.t || null;
 }
 
 function pickBestHlsUrl(hls) {
