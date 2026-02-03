@@ -12,11 +12,14 @@ export function isLoomUrl(url) {
 
   const host = u.hostname.replace(/^www\./i, '').toLowerCase();
   if (host !== 'loom.com') return false;
-  return /^(?:\/share\/|\/v\/|\/embed\/)/.test(u.pathname);
+
+  // Loom uses a few canonical URL shapes.
+  // Keep this permissive (but still hostname-anchored) so copy/paste links keep working.
+  return /^(?:\/share\/|\/v\/|\/embed\/|\/recording\/)/.test(u.pathname);
 }
 
 export function extractLoomId(url) {
-  const match = String(url || '').match(/loom\.com\/(?:share|v|embed)\/([a-zA-Z0-9_\-]+)/);
+  const match = String(url || '').match(/loom\.com\/(?:share|v|embed|recording)\/([a-zA-Z0-9_\-]+)/);
   return match ? match[1] : null;
 }
 

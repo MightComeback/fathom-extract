@@ -22,7 +22,8 @@ export function extractYoutubeId(url) {
     return /^[a-zA-Z0-9_-]{11}$/.test(id || '') ? id : null;
   }
 
-  if (!/(^|\.)youtube\.com$/i.test(host)) return null;
+  // Accept youtube.com subdomains (m., music., etc) and youtube-nocookie.com embeds.
+  if (!/(^|\.)youtube\.com$/i.test(host) && !/(^|\.)youtube-nocookie\.com$/i.test(host)) return null;
 
   // watch?v=<id>
   const v = u.searchParams.get('v');
@@ -73,7 +74,7 @@ function ensureVtt(baseUrl) {
   if (!u) return '';
   if (/\bfmt=vtt\b/i.test(u)) return u;
 
-  // Tests expect "&fmt=vtt" even when no query string is present.
+  // NOTE: tests expect "&fmt=vtt" even when no query string is present.
   // (YouTube timedtext baseUrl usually already has query params.)
   return `${u}&fmt=vtt`;
 }
