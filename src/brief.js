@@ -37,6 +37,28 @@ export function normalizeUrlLike(s) {
     v0 = v0.replace(/^[(`\{"'“”‘’«»‹›]+\s*/g, '').trim();
   }
 
+  function normalizeBareKnownUrl(u) {
+    const s = String(u || '').trim();
+    if (!s) return '';
+
+    // Convenience: accept bare provider URLs (no scheme) from chat copy/paste.
+    // Keep this intentionally narrow (well-known hosts only).
+    const m = s.match(
+      /^(?:www\.)?(?<host>(?:fathom\.video|loom\.com|youtu\.be|(?:m\.|music\.)?youtube\.com|vimeo\.com|player\.vimeo\.com))\/(?<rest>\S+)/i
+    );
+    if (!m) return '';
+
+    const host = String(m.groups?.host || '').toLowerCase();
+    const rest = String(m.groups?.rest || '');
+
+    // Normalize some common host aliases.
+    let normalizedHost = host;
+    if (normalizedHost === 'm.youtube.com' || normalizedHost === 'music.youtube.com') normalizedHost = 'youtube.com';
+    if (normalizedHost === 'player.vimeo.com') normalizedHost = 'vimeo.com';
+
+    return `https://${normalizedHost}/${rest}`;
+  }
+
   // Allow copy/paste-friendly forms like:
   //   <https://example.com>
   // and Slack-style links like:
@@ -47,16 +69,16 @@ export function normalizeUrlLike(s) {
   if (slack) {
     const u = String(slack[1] || '').trim();
     if (/^(?:https?:\/\/|data:)/i.test(u)) return u;
-    const bare = u.match(/^(?:www\.)?fathom\.video\/[\S]+/i);
-    if (bare) return `https://${bare[0]}`;
+    const bare = normalizeBareKnownUrl(u);
+    if (bare) return bare;
   }
 
   const angle = v0.match(/^<\s*([^>\s]+)\s*>\s*[)\]>'\"`“”‘’»«›‹.,;:!?…。！，？。､、）】〉》」』}]*$/i);
   if (angle) {
     const u = String(angle[1] || '').trim();
     if (/^(?:https?:\/\/|data:)/i.test(u)) return u;
-    const bare = u.match(/^(?:www\.)?fathom\.video\/[\S]+/i);
-    if (bare) return `https://${bare[0]}`;
+    const bare = normalizeBareKnownUrl(u);
+    if (bare) return bare;
   }
 
   // Accept markdown link form:
@@ -65,13 +87,13 @@ export function normalizeUrlLike(s) {
   //   [label](fathom.video/share/...) or [label](www.fathom.video/share/...)
   // Also tolerate trailing punctuation after the wrapper.
   const md = v0.match(
-    /^\[[^\]]*\]\(\s*(?<u>(?:(?:https?:\/\/|data:)[^)\s]+)|(?:(?:www\.)?fathom\.video\/[^)\s]+))\s*\)\s*[)\]>'\"`“”‘’»«›‹.,;:!?…。！，？。､、）】〉》」』}]*$/i
+    /^\[[^\]]*\]\(\s*(?<u>(?:(?:https?:\/\/|data:)[^)\s]+)|(?:(?:www\.)?(?:fathom\.video|loom\.com|youtu\.be|(?:m\.|music\.)?youtube\.com|vimeo\.com|player\.vimeo\.com)\/[^)\s]+))\s*\)\s*[)\]>'\"`“”‘’»«›‹.,;:!?…。！，？。､、）】〉》」』}]*$/i
   );
   if (md) {
     const u = String(md.groups?.u || '').trim();
     if (/^(?:https?:\/\/|data:)/i.test(u)) return u;
-    const bare = u.match(/^(?:www\.)?fathom\.video\/[\S]+/i);
-    if (bare) return `https://${bare[0]}`;
+    const bare = normalizeBareKnownUrl(u);
+    if (bare) return bare;
     return u;
   }
 
@@ -100,12 +122,12 @@ export function normalizeUrlLike(s) {
     return stripped;
   }
 
-  // Convenience: accept bare fathom.video URLs (no scheme) from chat copy/paste.
-  const bare = v0.match(/^(?:www\.)?fathom\.video\/[\S]+/i);
+  // Convenience: accept bare provider URLs (no scheme) from chat copy/paste.
+  const bare = normalizeBareKnownUrl(v0);
   if (bare) {
-    let u = `https://${bare[0]}`;
+    let u = bare;
     u = u.replace(/\s+\([^)]*\)\s*$/g, '');
-    
+
     const stripped = u.replace(/[)\]>'\"`“”‘’»«›‹.,;:!?…。！，？。､、）】〉》」』}]+$/g, '');
     if (u.endsWith(')') && stripped.length < u.length) {
       const openCount = (stripped.match(/\(/g) || []).length;

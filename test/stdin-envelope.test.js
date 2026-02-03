@@ -366,3 +366,39 @@ test('extractFromStdin accepts "Loom link:" as a Source alias', () => {
   assert.equal(out.source, 'https://loom.com/share/abc');
   assert.equal(out.title, 'Loom link label');
 });
+
+test('extractFromStdin accepts bare loom.com URLs (no scheme) and normalizes to https://', () => {
+  const input = [
+    'Source: loom.com/share/abc',
+    'Title: Bare Loom URL',
+    '00:01 Alice: it crashes',
+  ].join('\n');
+
+  const out = extractFromStdin({ content: input, source: 'stdin' });
+  assert.equal(out.source, 'https://loom.com/share/abc');
+  assert.equal(out.title, 'Bare Loom URL');
+});
+
+test('extractFromStdin accepts bare youtube.com URLs (no scheme) and normalizes to https://', () => {
+  const input = [
+    'Source: youtube.com/watch?v=dQw4w9WgXcQ',
+    'Title: Bare YouTube URL',
+    '00:01 Alice: it crashes',
+  ].join('\n');
+
+  const out = extractFromStdin({ content: input, source: 'stdin' });
+  assert.equal(out.source, 'https://youtube.com/watch?v=dQw4w9WgXcQ');
+  assert.equal(out.title, 'Bare YouTube URL');
+});
+
+test('extractFromStdin accepts bare vimeo.com URLs (no scheme) and normalizes to https://', () => {
+  const input = [
+    'Source: vimeo.com/123456789',
+    'Title: Bare Vimeo URL',
+    '00:01 Alice: it crashes',
+  ].join('\n');
+
+  const out = extractFromStdin({ content: input, source: 'stdin' });
+  assert.equal(out.source, 'https://vimeo.com/123456789');
+  assert.equal(out.title, 'Bare Vimeo URL');
+});
