@@ -132,7 +132,17 @@ export function normalizeUrlLike(s) {
         // Loom also supports timestamp deep-links in some contexts (t/start).
         // Preserve sid + t/start (drop other tracking params).
         const sid = url.searchParams.get('sid') || '';
-        const t = url.searchParams.get('t') || url.searchParams.get('start') || '';
+
+        // Preserve timestamps when Loom links deep-link using either query params (?t=.../?start=...)
+        // or hash fragments (#t=.../#start=...).
+        let t = url.searchParams.get('t') || url.searchParams.get('start') || '';
+        if (!t) {
+          const hash = String(url.hash || '').replace(/^#/, '').trim();
+          if (hash) {
+            const hp = new URLSearchParams(hash);
+            t = hp.get('t') || hp.get('start') || '';
+          }
+        }
 
         const params = [];
         if (sid) params.push(`sid=${encodeURIComponent(sid)}`);
