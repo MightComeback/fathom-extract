@@ -402,3 +402,47 @@ test('extractFromStdin accepts bare vimeo.com URLs (no scheme) and normalizes to
   assert.equal(out.source, 'https://vimeo.com/123456789');
   assert.equal(out.title, 'Bare Vimeo URL');
 });
+
+test('extractFromStdin accepts a bare YouTube URL on its own line (no Source: header)', () => {
+  const input = [
+    'youtube.com/watch?v=dQw4w9WgXcQ',
+    'Title: YouTube bare line',
+    '00:01 Alice: it crashes',
+  ].join('\n');
+
+  const out = extractFromStdin({ content: input, source: 'stdin' });
+  assert.equal(out.source, 'https://youtube.com/watch?v=dQw4w9WgXcQ');
+});
+
+test('extractFromStdin accepts a bare youtu.be URL on its own line (no Source: header)', () => {
+  const input = [
+    'youtu.be/dQw4w9WgXcQ',
+    'Title: youtu.be bare line',
+    '00:01 Alice: it crashes',
+  ].join('\n');
+
+  const out = extractFromStdin({ content: input, source: 'stdin' });
+  assert.equal(out.source, 'https://youtu.be/dQw4w9WgXcQ');
+});
+
+test('extractFromStdin accepts a bare Vimeo URL on its own line (no Source: header)', () => {
+  const input = [
+    'vimeo.com/123456789',
+    'Title: Vimeo bare line',
+    '00:01 Alice: it crashes',
+  ].join('\n');
+
+  const out = extractFromStdin({ content: input, source: 'stdin' });
+  assert.equal(out.source, 'https://vimeo.com/123456789');
+});
+
+test('extractFromStdin accepts a bare player.vimeo.com URL on its own line (no Source: header)', () => {
+  const input = [
+    'player.vimeo.com/video/123456789',
+    'Title: Vimeo player bare line',
+    '00:01 Alice: it crashes',
+  ].join('\n');
+
+  const out = extractFromStdin({ content: input, source: 'stdin' });
+  assert.equal(out.source, 'https://vimeo.com/video/123456789');
+});
