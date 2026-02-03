@@ -19,3 +19,6 @@ commit_url.txt
 
 # npm lockfile (repo currently has no deps; avoid noisy generated files)
 package-lock.json
+
+# local automation state
+.commit_url
