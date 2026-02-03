@@ -46,6 +46,15 @@ function pickBestTextTrack(textTracks = []) {
   return en || textTracks[0];
 }
 
+function normalizeVimeoAssetUrl(url, base = 'https://vimeo.com') {
+  const v = String(url || '').trim();
+  if (!v) return '';
+  if (/^https?:\/\//i.test(v)) return v;
+  if (v.startsWith('//')) return `https:${v}`;
+  if (v.startsWith('/')) return `${base}${v}`;
+  return v;
+}
+
 function extractBalancedJsonObject(source, startIndex) {
   // startIndex must point at '{'
   let depth = 0;
@@ -126,10 +135,10 @@ export function extractVimeoMetadataFromHtml(html) {
 
   const progressive = cfg?.request?.files?.progressive || [];
   const best = pickBestProgressive(progressive);
-  const mediaUrl = best?.url || undefined;
+  const mediaUrl = normalizeVimeoAssetUrl(best?.url) || undefined;
 
   const tt = pickBestTextTrack(cfg?.request?.text_tracks || []);
-  const transcriptUrl = tt?.url || undefined;
+  const transcriptUrl = normalizeVimeoAssetUrl(tt?.url) || undefined;
 
   // Optional description from og:description (tests rely on it)
   let description = ogDesc || '';

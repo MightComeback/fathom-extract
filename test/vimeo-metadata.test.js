@@ -45,6 +45,43 @@ test('extractVimeoMetadataFromHtml extracts metadata from clip_page_config', () 
   assert.strictEqual(result.transcriptUrl, 'https://cdn.vimeo.com/subs.vtt');
 });
 
+test('extractVimeoMetadataFromHtml normalizes scheme-less and relative asset URLs', () => {
+  const mockConfig = {
+    clip: {
+      name: 'Vimeo Test',
+      duration: { raw: 120 },
+      poster: { display_src: 'https://cdn.vimeo.com/poster.jpg' }
+    },
+    owner: {
+      display_name: 'Vimeo User',
+    },
+    request: {
+      files: {
+        progressive: [
+          { url: '//cdn.vimeo.com/video.mp4', width: 1920, quality: '1080p' },
+        ]
+      },
+      text_tracks: [
+        { url: '/texttrack/subs.vtt', lang: 'en' }
+      ]
+    }
+  };
+
+  const html = `
+    <html>
+      <script>
+        window.vimeo = window.vimeo || {};
+        window.vimeo.clip_page_config = ${JSON.stringify(mockConfig)};
+      </script>
+    </html>
+  `;
+
+  const result = extractVimeoMetadataFromHtml(html);
+  assert.ok(result);
+  assert.strictEqual(result.mediaUrl, 'https://cdn.vimeo.com/video.mp4');
+  assert.strictEqual(result.transcriptUrl, 'https://vimeo.com/texttrack/subs.vtt');
+});
+
 test('extractVimeoMetadataFromHtml returns null if config missing', () => {
-    assert.strictEqual(extractVimeoMetadataFromHtml('<html></html>'), null);
+  assert.strictEqual(extractVimeoMetadataFromHtml('<html></html>'), null);
 });
