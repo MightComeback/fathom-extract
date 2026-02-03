@@ -126,6 +126,8 @@ test('extractVimeoMetadataFromHtml prefers non-auto English VTT text tracks', ()
       text_tracks: [
         { url: 'https://cdn.vimeo.com/subs-auto.vtt', lang: 'en', name: 'English (auto)' },
         { url: 'https://cdn.vimeo.com/subs.json', lang: 'en', name: 'English' },
+        // Some Vimeo pages serve VTT via an endpoint with a format query param (no .vtt extension).
+        { url: 'https://vimeo.com/texttrack/12345?format=vtt', lang: 'en', name: 'English' },
         { url: 'https://cdn.vimeo.com/subs.vtt', lang: 'en', name: 'English' },
         { url: 'https://cdn.vimeo.com/subs-es.vtt', lang: 'es', name: 'Español' },
       ],

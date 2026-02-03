@@ -55,11 +55,17 @@ function pickBestTextTrack(textTracks = []) {
 
     const isEn = lang.startsWith('en');
     const isAuto = name.includes('auto') || name.includes('automatic') || name.includes('asr');
-    const isVtt = /\.vtt(?:\?|#|$)/i.test(url);
+    // Vimeo text track URLs are sometimes direct .vtt files, but can also be served from
+    // endpoints like /texttrack?format=vtt (no .vtt extension). Treat both as VTT.
+    const isDirectVtt = /\.vtt(?:\?|#|$)/i.test(url);
+    const isVttParam = /[?&](?:format|fmt)=vtt(?:&|$)/i.test(url);
+    const isVtt = isDirectVtt || isVttParam;
 
     // Higher is better.
     // Prefer English, prefer non-auto tracks, prefer VTT (most consistent parser/quality).
-    const score = (isEn ? 100 : 0) + (isAuto ? 0 : 10) + (isVtt ? 2 : 0);
+    // Prefer a direct .vtt asset over an endpoint that serves VTT via query params.
+    const vttScore = isDirectVtt ? 3 : isVtt ? 2 : 0;
+    const score = (isEn ? 100 : 0) + (isAuto ? 0 : 10) + vttScore;
 
     return { t, score };
   };
