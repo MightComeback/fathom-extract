@@ -167,13 +167,15 @@ export function normalizeUrlLike(s) {
       // Preserve common deep-link time anchors.
       // Vimeo shares typically use hash fragments like #t=1m2s, but we've also seen ?t=... in the wild.
       function vimeoTimeSuffix(u) {
-        const fromQuery = u.searchParams.get('t');
+        // Vimeo deep-links commonly use #t=..., but we also see ?t=... and ?start=... in the wild.
+        // Normalize all time hints into a canonical #t=... fragment.
+        const fromQuery = u.searchParams.get('t') || u.searchParams.get('start');
         if (fromQuery) return `#t=${encodeURIComponent(fromQuery)}`;
 
         const hash = String(u.hash || '').replace(/^#/, '').trim();
         if (!hash) return '';
         const hp = new URLSearchParams(hash);
-        const fromHash = hp.get('t');
+        const fromHash = hp.get('t') || hp.get('start');
         if (!fromHash) return '';
         return `#t=${encodeURIComponent(fromHash)}`;
       }
