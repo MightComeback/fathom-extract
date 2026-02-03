@@ -58,6 +58,14 @@ export function extractVimeoId(url) {
   const first = (segs[0] || '').toLowerCase();
   const isBlocked = blockedTopLevel.has(first);
 
+  // Provider parity / correctness:
+  // Vimeo showcases are collections. The top-level showcase URL is *not* a clip URL.
+  // Only treat showcases as videos when the URL explicitly includes a video id, e.g.:
+  //   https://vimeo.com/showcase/<showcaseId>/video/<videoId>
+  if (first === 'showcase' && !segs.some((x) => String(x || '').toLowerCase() === 'video')) {
+    return null;
+  }
+
   const isId = (x) => /^\d{3,}$/.test(String(x || ''));
 
   // Provider parity: Vimeo "manage" links (seen when copying from the dashboard).
@@ -157,6 +165,10 @@ export function vimeoNonVideoReason(url) {
 
   if (first === 'blog') {
     return 'Vimeo blog pages are not supported. Open the embedded video and copy its Vimeo clip URL (https://vimeo.com/<id>).';
+  }
+
+  if (first === 'showcase' && !/\/video\/\d+\b/i.test(u.pathname || '')) {
+    return 'Vimeo showcase pages are not supported. Open the showcase video and copy the actual clip URL (https://vimeo.com/<id> or https://vimeo.com/showcase/<showcaseId>/video/<videoId>).';
   }
 
   return '';
