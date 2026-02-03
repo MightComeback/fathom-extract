@@ -495,9 +495,12 @@ async function bestEffortExtract({ url, cookie, referer, userAgent }) {
           ].filter((x) => Array.isArray(x) && x.length);
 
           const items = candidates[0] || [];
-          const joined = items
-            .map((it) => {
-              if (typeof it === 'string') return it.trim();
+
+          const parsed = items
+            .map((it, idx) => {
+              if (typeof it === 'string') {
+                return { idx, start: null, text: it.trim() };
+              }
 
               // Vimeo transcript JSON has shown up in a few shapes. Be generous:
               //  - { text: "..." }
@@ -507,7 +510,7 @@ async function bestEffortExtract({ url, cookie, referer, userAgent }) {
               //  - { content: "..." } or { content: { text: "..." } }
               //  - { data: { text: "..." } }
               //  - { payload: { text: "..." } }
-              const raw =
+              const rawText =
                 it?.text ||
                 it?.caption ||
                 it?.line ||
@@ -518,12 +521,41 @@ async function bestEffortExtract({ url, cookie, referer, userAgent }) {
                 it?.payload?.text ||
                 '';
 
-              return String(raw).trim();
-            })
-            .filter(Boolean)
-            .join(' ')
-            .trim();
+              const startRaw =
+                it?.start ??
+                it?.startTime ??
+                it?.begin ??
+                it?.time ??
+                it?.timestamp ??
+                it?.data?.start ??
+                it?.data?.startTime ??
+                it?.payload?.start ??
+                it?.payload?.startTime ??
+                null;
 
+              const start = startRaw == null ? null : Number(startRaw);
+              return {
+                idx,
+                start: Number.isFinite(start) ? start : null,
+                text: String(rawText).trim(),
+              };
+            })
+            .filter((x) => Boolean(x.text));
+
+          // Some Vimeo transcript/cue endpoints don't guarantee ordering.
+          // If we have start times, sort by time; otherwise preserve input order.
+          const hasAnyStart = parsed.some((x) => x.start != null);
+          if (hasAnyStart) {
+            parsed.sort((a, b) => {
+              if (a.start == null && b.start == null) return a.idx - b.idx;
+              if (a.start == null) return 1;
+              if (b.start == null) return -1;
+              if (a.start !== b.start) return a.start - b.start;
+              return a.idx - b.idx;
+            });
+          }
+
+          const joined = parsed.map((x) => x.text).join(' ').trim();
           text = joined || parseSimpleVtt(body);
         } catch {
           text = parseSimpleVtt(body);

@@ -219,3 +219,52 @@ test('extractFromUrl parses Vimeo JSON text tracks with nested content.text fiel
   assert.equal(res.ok, true);
   assert.equal(res.text, 'Hello nested');
 });
+
+test('extractFromUrl sorts Vimeo JSON cues by start time when out of order', async (t) => {
+  const mockConfig = {
+    clip: { name: 'Vimeo Out-of-Order Cues Test' },
+    request: { text_tracks: [{ url: 'https://cdn.vimeo.com/out-of-order.json', lang: 'en' }] },
+  };
+
+  const vimeoHtml = `
+    <html>
+      <script>
+        window.vimeo = window.vimeo || {};
+        window.vimeo.clip_page_config = ${JSON.stringify(mockConfig)};
+      </script>
+    </html>
+  `;
+
+  const oldFetch = globalThis.fetch;
+  t.after(() => {
+    globalThis.fetch = oldFetch;
+  });
+
+  globalThis.fetch = async (input, init = {}) => {
+    const url = String(typeof input === 'string' ? input : input?.url || '');
+    const method = String(init?.method || 'GET').toUpperCase();
+
+    if (method === 'HEAD') return mkResponse('', { status: 405 });
+
+    if (/^https:\/\/vimeo\.com\/777777777\b/i.test(url)) {
+      return mkResponse(vimeoHtml, { status: 200, headers: { 'content-type': 'text/html' } });
+    }
+
+    if (/cdn\.vimeo\.com\/out-of-order\.json/i.test(url)) {
+      const json = JSON.stringify({
+        cues: [
+          { startTime: 2, text: 'third' },
+          { startTime: 0, text: 'first' },
+          { startTime: 1, text: 'second' },
+        ],
+      });
+      return mkResponse(json, { status: 200, headers: { 'content-type': 'application/json' } });
+    }
+
+    return mkResponse('not found', { status: 404 });
+  };
+
+  const res = await extractFromUrl('https://vimeo.com/777777777', { noDownload: true, noSplit: true });
+  assert.equal(res.ok, true);
+  assert.equal(res.text, 'first second third');
+});
