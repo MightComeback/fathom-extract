@@ -182,7 +182,14 @@ export function normalizeUrlLike(s) {
       //  - /i/<id>
       //  - /s/<id>
       const m = path.match(/^\/(?:share|embed|v|recording|i|s)\/(?<id>[^/?#]+)/i);
-      if (m?.groups?.id) {
+      // Provider parity: some Loom share flows produce bare URLs like https://loom.com/<id>
+      // Normalize those too when the token looks like a Loom id.
+      const mBare = !m ? path.match(/^\/(?<id>[^/?#]+)\/?$/i) : null;
+
+      const id = m?.groups?.id || mBare?.groups?.id || '';
+      const looksLikeLoomId = /^[a-zA-Z0-9_-]{10,}$/.test(id);
+
+      if (id && (m || looksLikeLoomId)) {
         // Some Loom share links include a sid (session id) that may be required for access.
         // Loom also supports timestamp deep-links in some contexts (t/start).
         // Preserve sid + t/start (drop other tracking params).
@@ -203,7 +210,7 @@ export function normalizeUrlLike(s) {
         if (sid) params.push(`sid=${encodeURIComponent(sid)}`);
         if (t) params.push(`t=${encodeURIComponent(t)}`);
 
-        return `https://loom.com/share/${m.groups.id}${params.length ? `?${params.join('&')}` : ''}`;
+        return `https://loom.com/share/${id}${params.length ? `?${params.join('&')}` : ''}`;
       }
       return raw;
     }

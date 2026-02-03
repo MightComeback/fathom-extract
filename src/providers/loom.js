@@ -42,6 +42,17 @@ export function extractLoomId(url) {
   if (!/(^|\.)loom\.com$/i.test(host)) return null;
 
   const parts = u.pathname.split('/').filter(Boolean);
+
+  // Provider parity: some Loom share flows produce bare URLs like:
+  //   https://loom.com/<id>
+  // Treat these as share URLs when the token looks like a Loom id.
+  if (parts.length === 1) {
+    const only = parts[0];
+    // Keep this conservative to avoid matching non-video paths.
+    if (/^[a-zA-Z0-9_-]{10,}$/.test(only || '')) return only;
+    return null;
+  }
+
   if (parts.length < 2) return null;
 
   const kind = parts[0];

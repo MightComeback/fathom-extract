@@ -5,6 +5,8 @@ import { isLoomUrl, extractLoomId } from '../src/providers/loom.js';
 test('isLoomUrl identifies valid Loom URLs', (t) => {
   assert.strictEqual(isLoomUrl('https://www.loom.com/share/1234567890abcdef'), true);
   assert.strictEqual(isLoomUrl('https://loom.com/share/1234567890abcdef'), true);
+  // Provider parity: accept bare Loom share URLs like https://loom.com/<id>
+  assert.strictEqual(isLoomUrl('https://loom.com/1234567890abcdef'), true);
   assert.strictEqual(isLoomUrl('https://share.loom.com/share/1234567890abcdef'), true);
   assert.strictEqual(isLoomUrl('https://www.loom.com/v/1234567890abcdef'), true);
   assert.strictEqual(isLoomUrl('https://www.loom.com/embed/1234567890abcdef'), true);
@@ -25,6 +27,7 @@ test('isLoomUrl allows IDs with dashes', (t) => {
 
 test('extractLoomId extracts ID correctly', (t) => {
   assert.strictEqual(extractLoomId('https://www.loom.com/share/abcdef123'), 'abcdef123');
+  assert.strictEqual(extractLoomId('https://loom.com/1234567890abcdef'), '1234567890abcdef');
   assert.strictEqual(extractLoomId('https://www.loom.com/v/xyz789'), 'xyz789');
   assert.strictEqual(extractLoomId('https://www.loom.com/embed/foo555'), 'foo555');
   assert.strictEqual(extractLoomId('https://www.loom.com/recording/bar999'), 'bar999');
