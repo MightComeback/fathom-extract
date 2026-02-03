@@ -23,15 +23,32 @@ test('extractVimeoMetadataFromHtml extracts description from OG tags', () => {
 });
 
 test('extractVimeoMetadataFromHtml works without config if meta tags present', () => {
-    const html = `
-      <html>
-        <meta property="og:title" content="Meta Title">
-        <meta property="og:description" content="Meta Description">
-      </html>
-    `;
-    
-    const result = extractVimeoMetadataFromHtml(html);
-    assert.ok(result);
-    assert.strictEqual(result.title, 'Meta Title');
-    assert.strictEqual(result.description, 'Meta Description');
+  const html = `
+    <html>
+      <meta property="og:title" content="Meta Title">
+      <meta property="og:description" content="Meta Description">
+    </html>
+  `;
+
+  const result = extractVimeoMetadataFromHtml(html);
+  assert.ok(result);
+  assert.strictEqual(result.title, 'Meta Title');
+  assert.strictEqual(result.description, 'Meta Description');
+});
+
+test('extractVimeoMetadataFromHtml falls back to clip.description when OG description is missing', () => {
+  const config = { clip: { name: 'Title', description: 'Config description' } };
+  const html = `
+    <html>
+      <script>
+        window.vimeo = window.vimeo || {};
+        window.vimeo.clip_page_config = ${JSON.stringify(config)};
+      </script>
+    </html>
+  `;
+
+  const result = extractVimeoMetadataFromHtml(html);
+  assert.ok(result);
+  assert.strictEqual(result.title, 'Title');
+  assert.strictEqual(result.description, 'Config description');
 });

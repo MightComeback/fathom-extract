@@ -140,8 +140,15 @@ export function extractVimeoMetadataFromHtml(html) {
   const tt = pickBestTextTrack(cfg?.request?.text_tracks || []);
   const transcriptUrl = normalizeVimeoAssetUrl(tt?.url) || undefined;
 
-  // Optional description from og:description (tests rely on it)
-  let description = ogDesc || '';
+  // Description: prefer og:description (most reliable), otherwise fall back to config clip description.
+  // Vimeo has used a few shapes over time:
+  //  - clip.description (string)
+  //  - clip.description.text (string)
+  const cfgDesc =
+    (typeof cfg?.clip?.description === 'string' ? cfg.clip.description : '') ||
+    (typeof cfg?.clip?.description?.text === 'string' ? cfg.clip.description.text : '');
+
+  const description = ogDesc || cfgDesc || '';
 
   return {
     title: title || undefined,
