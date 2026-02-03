@@ -6,6 +6,9 @@ import { spawn } from 'node:child_process';
 import { normalizeUrlLike } from './brief.js';
 import { parseSimpleVtt } from './utils.js';
 import { extractFathomTranscriptUrl } from './providers/fathom.js';
+import { isYoutubeUrl, extractYoutubeMetadataFromHtml } from './providers/youtube.js';
+import { isVimeoUrl, extractVimeoMetadataFromHtml } from './providers/vimeo.js';
+import { isLoomUrl, extractLoomMetadataFromHtml, parseLoomTranscript } from './providers/loom.js';
 
 function oneLine(s) {
   return String(s || '')
@@ -379,12 +382,67 @@ function extractAnyJsonUrls(html, keys = []) {
 async function bestEffortExtract({ url, cookie, referer, userAgent }) {
   const headers = buildHeaders({ cookie, referer, userAgent });
 
+  const resolveUrl = (maybeRelative, base) => {
+    const v = String(maybeRelative || '').trim();
+    if (!v) return '';
+    try {
+      // Handles absolute, protocol-relative, and relative URLs.
+      return new URL(v, base).toString();
+    } catch {
+      return v;
+    }
+  };
+
   const { body: html } = await fetchText(url, { headers });
   const normalized = normalizeFetchedContent(html, url);
 
   let title = normalized.suggestedTitle || '';
   let text = normalized.text || '';
+  const normalizedText = text;
   let mediaUrl = normalized.mediaUrl || '';
+
+  // Provider-aware enrichment (Loom/YouTube/Vimeo) for better parity with Fathom.
+  try {
+    if (isLoomUrl(url)) {
+      const meta = extractLoomMetadataFromHtml(html) || {};
+      if (meta.title && !title) title = meta.title;
+
+      // Loom transcript can be inlined in the Apollo state.
+      if (meta.transcriptText && (!text || text === normalizedText)) {
+        text = String(meta.transcriptText);
+      }
+
+      if (meta.transcriptUrl && (!text || text === normalizedText)) {
+        const tUrl = resolveUrl(meta.transcriptUrl, url);
+        const { body } = await fetchText(tUrl, { headers });
+        text = /\.vtt(?:\?|#|$)/i.test(tUrl) ? parseSimpleVtt(body) : parseLoomTranscript(body);
+      }
+
+      if (meta.mediaUrl && !mediaUrl) mediaUrl = resolveUrl(meta.mediaUrl, url);
+    } else if (isYoutubeUrl(url)) {
+      const meta = extractYoutubeMetadataFromHtml(html) || {};
+      if (meta.title && !title) title = meta.title;
+
+      // Caption tracks are usually VTT.
+      if (meta.transcriptUrl && (!text || text === normalizedText)) {
+        const tUrl = resolveUrl(meta.transcriptUrl, url);
+        const { body } = await fetchText(tUrl, { headers });
+        text = parseSimpleVtt(body);
+      }
+    } else if (isVimeoUrl(url)) {
+      const meta = extractVimeoMetadataFromHtml(html) || {};
+      if (meta?.title && !title) title = meta.title;
+      if (meta?.mediaUrl && !mediaUrl) mediaUrl = resolveUrl(meta.mediaUrl, url);
+
+      if (meta?.transcriptUrl && (!text || text === normalizedText)) {
+        const tUrl = resolveUrl(meta.transcriptUrl, url);
+        const { body } = await fetchText(tUrl, { headers });
+        text = parseSimpleVtt(body);
+      }
+    }
+  } catch {
+    // Best effort only.
+  }
 
   // Prefer Fathom's copy_transcript if present
   const copyTranscriptUrl = extractFathomTranscriptUrl(html);

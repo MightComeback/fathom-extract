@@ -118,8 +118,10 @@ export function extractLoomMetadataFromHtml(html) {
 
         // Transcript url (VideoTranscriptDetails)
         const vtdKey = Object.keys(state).find((k) => k.startsWith('VideoTranscriptDetails:'));
-        if (vtdKey && state[vtdKey]?.source_url) {
-          meta.transcriptUrl = state[vtdKey].source_url;
+        if (vtdKey) {
+          const vtd = state[vtdKey] || {};
+          // Loom has used both `source_url` (JSON transcript) and `captions_source_url` (VTT) over time.
+          meta.transcriptUrl = vtd.source_url || vtd.captions_source_url || meta.transcriptUrl;
         }
 
         // Transcript text (Transcript paragraphs)
