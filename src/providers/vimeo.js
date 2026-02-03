@@ -20,7 +20,9 @@ export function extractVimeoId(url) {
   if (!/(^|\.)vimeo\.com$/i.test(host) && host !== 'player.vimeo.com') return null;
 
   // Match numeric ID anywhere in path segments.
-  const m = u.pathname.match(/\b(\d{6,})\b/);
+  // Vimeo IDs can be shorter than 6 digits (older content), so be permissive.
+  // Keep a small floor to avoid matching incidental numbers in paths.
+  const m = u.pathname.match(/\b(\d{3,})\b/);
   return m ? m[1] : null;
 }
 
