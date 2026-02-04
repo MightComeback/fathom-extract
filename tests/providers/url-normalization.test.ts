@@ -59,4 +59,11 @@ describe("provider URL normalization", () => {
     const u = normalizeUrlLike("https://vimeo.com/manage/videos/76979871");
     assert.equal(u, "https://vimeo.com/76979871");
   });
+
+  test("normalizes Vimeo review URLs without dropping the review token", () => {
+    const u = normalizeUrlLike(
+      "https://player.vimeo.com/video/76979871/review/SECRETTOKEN/abcd1234?share=copy#t=30s"
+    );
+    assert.equal(u, "https://vimeo.com/76979871/review/SECRETTOKEN/abcd1234#t=30s");
+  });
 });

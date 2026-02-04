@@ -246,8 +246,20 @@ export function normalizeUrlLike(s) {
       // Example: https://vimeo.com/<id>/review/<token>/<hash>
       // Do not canonicalize these to https://vimeo.com/<id> (that would drop the token and break access).
       if (/\/review\//i.test(path)) {
-        // Normalize host, keep the path + remaining params (tracking params were already stripped above).
+        // Vimeo "review" links are real videos but often require the review token.
+        // Example: https://vimeo.com/<id>/review/<token>/<hash>
+        // Do not canonicalize these to https://vimeo.com/<id> (that would drop the token and break access).
+        // Still, normalize common player-style review URLs to a stable vimeo.com form.
+        // Example:
+        //   https://player.vimeo.com/video/<id>/review/<token>/...
+        //   -> https://vimeo.com/<id>/review/<token>/...
         url.hostname = 'vimeo.com';
+
+        const m = String(url.pathname || '').match(/^\/video\/(?<id>\d+)(?<rest>\/review\/.*)$/i);
+        if (m?.groups?.id && m?.groups?.rest) {
+          url.pathname = `/${m.groups.id}${m.groups.rest}`;
+        }
+
         return url.toString();
       }
 
