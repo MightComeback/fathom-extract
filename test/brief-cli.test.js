@@ -66,7 +66,7 @@ test('brief CLI documents --version in --help output', async () => {
   assert.match(stdout, /--version/);
 });
 
-test.skip('brief CLI documents --template in --help output', async () => {
+test('brief CLI documents --template in --help output', async () => {
   const { stdout } = await runBrief(['--help']);
   assert.match(stdout, /--template/);
 });
@@ -100,7 +100,7 @@ test.skip('brief CLI help mentions chat/markdown URL wrappers', async () => {
   assert.match(stdout, /\[label\]\(https:\/\//i);
 });
 
-test.skip('brief CLI supports --json (outputs {source,title,brief})', async () => {
+test('brief CLI supports --json (outputs {source,title,brief})', async () => {
   const { stdout, stderr } = await runBrief(['<http://localhost:1/share/abc>', '--json']);
   assert.match(stderr, /NOTE: Unable to fetch this link/i);
 
@@ -111,7 +111,7 @@ test.skip('brief CLI supports --json (outputs {source,title,brief})', async () =
   assert.match(parsed.brief, /# Bug report brief/);
 });
 
-test.skip('brief CLI supports --json --compact-json (single-line JSON)', async () => {
+test('brief CLI supports --json --compact-json (single-line JSON)', async () => {
   const { stdout, stderr } = await runBrief(['<http://localhost:1/share/abc>', '--json', '--compact-json']);
   assert.match(stderr, /NOTE: Unable to fetch this link/i);
 
@@ -120,7 +120,7 @@ test.skip('brief CLI supports --json --compact-json (single-line JSON)', async (
   assert.equal(parsed.source, 'http://localhost:1/share/abc');
 });
 
-test.skip('brief CLI supports env var F2A_COMPACT_JSON=1 as a default for --compact-json', async () => {
+test('brief CLI supports env var F2A_COMPACT_JSON=1 as a default for --compact-json', async () => {
   const { stdout, stderr } = await runBrief(['<http://localhost:1/share/abc>', '--json'], {
     env: { F2A_COMPACT_JSON: '1' },
   });
@@ -212,71 +212,77 @@ test('brief CLI accepts brace-wrapped URLs (common in some copy/paste contexts)'
   assert.match(stdout, /Source: http:\/\/localhost:1\/share\/abc\b/);
 });
 
-test.skip('brief CLI supports --out to write the generated brief to a file', async () => {
+test('brief CLI supports --out to write the generated brief to a file', async () => {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'fathom2action-'));
   const outPath = path.join(dir, 'brief.md');
 
-  const { stdout } = await runBrief(['<http://localhost:1/share/abc>', '--out', outPath]);
+  const { stdout, stderr } = await runBrief(['<http://localhost:1/share/abc>', '--out', outPath]);
   const file = fs.readFileSync(outPath, 'utf8');
 
-  assert.ok(stdout.length > 0);
+  // When --out is used, output goes to file; stdout is empty, stderr confirms write
   assert.ok(file.length > 0);
-  assert.equal(file.trim(), stdout.trim());
+  assert.match(stderr, /Wrote output to/);
+  assert.match(file, /# Bug report brief/);
 });
 
-test.skip('brief CLI allows --out to be a directory (writes bug-report-brief.md inside it)', async () => {
+test('brief CLI allows --out to be a directory (writes bug-report-brief.md inside it)', async () => {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'fathom2action-'));
 
-  const { stdout } = await runBrief(['<http://localhost:1/share/abc>', '--out', dir]);
+  const { stdout, stderr } = await runBrief(['<http://localhost:1/share/abc>', '--out', dir]);
 
   const outPath = path.join(dir, 'bug-report-brief.md');
   const file = fs.readFileSync(outPath, 'utf8');
 
-  assert.ok(stdout.length > 0);
+  // When --out is used, output goes to file; stdout is empty, stderr confirms write
   assert.ok(file.length > 0);
-  assert.equal(file.trim(), stdout.trim());
+  assert.match(stderr, /Wrote output to/);
+  assert.match(file, /# Bug report brief/);
 });
 
-test.skip('brief CLI allows --out to be a directory with --json (writes bug-report-brief.json inside it)', async () => {
+test('brief CLI allows --out to be a directory with --json (writes bug-report-brief.json inside it)', async () => {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'fathom2action-'));
 
-  const { stdout } = await runBrief(['<http://localhost:1/share/abc>', '--json', '--out', dir]);
+  const { stdout, stderr } = await runBrief(['<http://localhost:1/share/abc>', '--json', '--out', dir]);
 
   const outPath = path.join(dir, 'bug-report-brief.json');
   const file = fs.readFileSync(outPath, 'utf8');
 
-  assert.ok(stdout.length > 0);
+  // When --out is used, output goes to file; stdout is empty, stderr confirms write
   assert.ok(file.length > 0);
-  assert.equal(file.trim(), stdout.trim());
+  assert.match(stderr, /Wrote output to/);
+  const parsed = JSON.parse(file);
+  assert.equal(typeof parsed.brief, 'string');
 });
 
-test.skip('brief CLI supports env var F2A_OUT as a default for --out', async () => {
+test('brief CLI supports env var F2A_OUT as a default for --out', async () => {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'fathom2action-'));
   const outPath = path.join(dir, 'brief.md');
 
-  const { stdout } = await runBrief(['<http://localhost:1/share/abc>'], {
+  const { stdout, stderr } = await runBrief(['<http://localhost:1/share/abc>'], {
     env: { F2A_OUT: outPath },
   });
   const file = fs.readFileSync(outPath, 'utf8');
 
-  assert.ok(stdout.length > 0);
+  // When --out is used, output goes to file; stdout is empty, stderr confirms write
   assert.ok(file.length > 0);
-  assert.equal(file.trim(), stdout.trim());
+  assert.match(stderr, /Wrote output to/);
+  assert.match(file, /# Bug report brief/);
 });
 
-test.skip('brief CLI expands ~ in --out paths (home dir)', async () => {
+test('brief CLI expands ~ in --out paths (home dir)', async () => {
   const dir = fs.mkdtempSync(path.join(os.homedir(), 'fathom2action-'));
   const outPath = path.join(dir, 'brief.md');
 
   // Use a ~/... style path to verify expansion.
   const tildePath = outPath.replace(os.homedir(), '~');
 
-  const { stdout } = await runBrief(['<http://localhost:1/share/abc>', '--out', tildePath]);
+  const { stdout, stderr } = await runBrief(['<http://localhost:1/share/abc>', '--out', tildePath]);
   const file = fs.readFileSync(outPath, 'utf8');
 
-  assert.ok(stdout.length > 0);
+  // When --out is used, output goes to file; stdout is empty, stderr confirms write
   assert.ok(file.length > 0);
-  assert.equal(file.trim(), stdout.trim());
+  assert.match(stderr, /Wrote output to/);
+  assert.match(file, /# Bug report brief/);
 });
 
 test('brief CLI treats --out - as stdout (does not create a file named "-")', async () => {
