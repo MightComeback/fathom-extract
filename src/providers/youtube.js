@@ -58,6 +58,12 @@ export function extractYoutubeId(url) {
   const v = u.searchParams.get('v');
   if (v && /^[a-zA-Z0-9_-]{11}$/.test(v)) return v;
 
+  // Provider parity: some share flows or intermediate redirects produce URLs like:
+  //   https://www.youtube.com/watch/<id>
+  // Treat these as direct video URLs too.
+  const watchPath = u.pathname.match(/^\/watch\/([a-zA-Z0-9_-]{11})\b/);
+  if (watchPath) return watchPath[1];
+
   // /embed/<id>, /shorts/<id>, /live/<id>, /v/<id>
   // Also accept handle-based URLs like:
   //   /@SomeChannel/shorts/<id>
@@ -213,6 +219,18 @@ export function normalizeYoutubeUrl(url) {
   if (/^[a-zA-Z0-9_-]{11}$/.test(vPath?.[1] || '')) {
     const out = new URL('https://www.youtube.com/watch');
     out.searchParams.set('v', vPath[1]);
+    for (const [k, v] of u.searchParams.entries()) out.searchParams.set(k, v);
+    if (hashTime && !out.searchParams.has('t') && !out.searchParams.has('start') && !out.searchParams.has('time_continue')) {
+      out.searchParams.set('t', hashTime);
+    }
+    return out.toString();
+  }
+
+  // /watch/<id>
+  const watchPath = u.pathname.match(/^\/watch\/([^/?#]+)/);
+  if (/^[a-zA-Z0-9_-]{11}$/.test(watchPath?.[1] || '')) {
+    const out = new URL('https://www.youtube.com/watch');
+    out.searchParams.set('v', watchPath[1]);
     for (const [k, v] of u.searchParams.entries()) out.searchParams.set(k, v);
     if (hashTime && !out.searchParams.has('t') && !out.searchParams.has('start') && !out.searchParams.has('time_continue')) {
       out.searchParams.set('t', hashTime);

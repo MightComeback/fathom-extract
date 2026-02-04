@@ -9,6 +9,13 @@ test('normalizeYoutubeUrl normalizes youtu.be share links', () => {
   );
 });
 
+test('normalizeYoutubeUrl normalizes /watch/<id> URLs', () => {
+  assert.strictEqual(
+    normalizeYoutubeUrl('https://www.youtube.com/watch/dQw4w9WgXcQ?t=43'),
+    'https://www.youtube.com/watch?v=dQw4w9WgXcQ&t=43',
+  );
+});
+
 test('normalizeYoutubeUrl preserves query params (t/start/si/etc)', () => {
   assert.strictEqual(
     normalizeYoutubeUrl('https://youtu.be/dQw4w9WgXcQ?t=43'),
