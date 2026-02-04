@@ -16,6 +16,20 @@ test('normalizeYoutubeUrl preserves query params (t/start/si/etc)', () => {
   );
 });
 
+test('normalizeYoutubeUrl preserves hash timestamps (youtu.be)', () => {
+  assert.strictEqual(
+    normalizeYoutubeUrl('https://youtu.be/dQw4w9WgXcQ#t=1m2s'),
+    'https://www.youtube.com/watch?v=dQw4w9WgXcQ&t=1m2s',
+  );
+});
+
+test('normalizeYoutubeUrl preserves hash timestamps (watch URL)', () => {
+  assert.strictEqual(
+    normalizeYoutubeUrl('https://www.youtube.com/watch?v=dQw4w9WgXcQ#t=62'),
+    'https://www.youtube.com/watch?v=dQw4w9WgXcQ&t=62',
+  );
+});
+
 test('normalizeYoutubeUrl normalizes shorts URLs', () => {
   assert.strictEqual(
     normalizeYoutubeUrl('https://www.youtube.com/shorts/dQw4w9WgXcQ'),

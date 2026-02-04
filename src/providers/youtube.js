@@ -107,6 +107,16 @@ export function normalizeYoutubeUrl(url) {
     return s;
   }
 
+  // Provider parity: YouTube share links sometimes put timestamps in the hash fragment
+  // (e.g. https://youtu.be/<id>#t=1m2s). Normalize those into query params so downstream
+  // logic can preserve them consistently.
+  const hashTime = (() => {
+    const hash = String(u.hash || '').replace(/^#/, '').trim();
+    if (!hash) return '';
+    const hp = new URLSearchParams(hash);
+    return hp.get('t') || hp.get('start') || hp.get('time_continue') || '';
+  })();
+
   const host = u.hostname.replace(/^www\./i, '').toLowerCase();
 
   // /attribution_link?...&u=/watch%3Fv%3D<id>%26...
@@ -143,6 +153,9 @@ export function normalizeYoutubeUrl(url) {
       const out = new URL('https://www.youtube.com/watch');
       out.searchParams.set('v', id);
       for (const [k, v] of u.searchParams.entries()) out.searchParams.set(k, v);
+      if (hashTime && !out.searchParams.has('t') && !out.searchParams.has('start') && !out.searchParams.has('time_continue')) {
+        out.searchParams.set('t', hashTime);
+      }
       return out.toString();
     }
   }
@@ -153,6 +166,9 @@ export function normalizeYoutubeUrl(url) {
     const out = new URL('https://www.youtube.com/watch');
     out.searchParams.set('v', shorts[1]);
     for (const [k, v] of u.searchParams.entries()) out.searchParams.set(k, v);
+    if (hashTime && !out.searchParams.has('t') && !out.searchParams.has('start') && !out.searchParams.has('time_continue')) {
+      out.searchParams.set('t', hashTime);
+    }
     return out.toString();
   }
 
@@ -162,6 +178,9 @@ export function normalizeYoutubeUrl(url) {
     const out = new URL('https://www.youtube.com/watch');
     out.searchParams.set('v', live[1]);
     for (const [k, v] of u.searchParams.entries()) out.searchParams.set(k, v);
+    if (hashTime && !out.searchParams.has('t') && !out.searchParams.has('start') && !out.searchParams.has('time_continue')) {
+      out.searchParams.set('t', hashTime);
+    }
     return out.toString();
   }
 
@@ -171,6 +190,9 @@ export function normalizeYoutubeUrl(url) {
     const out = new URL('https://www.youtube.com/watch');
     out.searchParams.set('v', embed[1]);
     for (const [k, v] of u.searchParams.entries()) out.searchParams.set(k, v);
+    if (hashTime && !out.searchParams.has('t') && !out.searchParams.has('start') && !out.searchParams.has('time_continue')) {
+      out.searchParams.set('t', hashTime);
+    }
     return out.toString();
   }
 
@@ -180,6 +202,12 @@ export function normalizeYoutubeUrl(url) {
     u.protocol = 'https:';
     u.hostname = 'www.youtube.com';
   }
+
+  if (hashTime && !u.searchParams.has('t') && !u.searchParams.has('start') && !u.searchParams.has('time_continue')) {
+    u.searchParams.set('t', hashTime);
+  }
+  // Avoid leaking arbitrary hash fragments into canonical URLs.
+  u.hash = '';
 
   return u.toString();
 }
