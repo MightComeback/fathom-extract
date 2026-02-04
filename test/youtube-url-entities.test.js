@@ -11,7 +11,7 @@ test('YouTube provider helpers tolerate HTML-entity encoded query separators', (
   // normalizeYoutubeUrl should preserve the timestamp and remove the hash.
   assert.strictEqual(
     normalizeYoutubeUrl(raw),
-    'https://www.youtube.com/watch?v=dQw4w9WgXcQ&t=43s'
+    'https://youtube.com/watch?v=dQw4w9WgXcQ&t=43s'
   );
 });
 

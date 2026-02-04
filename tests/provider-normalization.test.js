@@ -18,7 +18,7 @@ describe('provider url detection + normalization', () => {
 
   test('YouTube: normalizeYoutubeUrl canonicalizes youtu.be and preserves hash time', () => {
     const u = normalizeYoutubeUrl('https://youtu.be/dQw4w9WgXcQ#t=1m2s');
-    expect(u).toBe('https://www.youtube.com/watch?v=dQw4w9WgXcQ&t=1m2s');
+    expect(u).toBe('https://youtube.com/watch?v=dQw4w9WgXcQ&t=1m2s');
   });
 
   test('YouTube: clip urls are detected as clips (not watch ids)', () => {

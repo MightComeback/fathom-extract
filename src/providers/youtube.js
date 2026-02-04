@@ -237,7 +237,7 @@ export function normalizeYoutubeUrl(url) {
   if (host === 'youtu.be') {
     const id = u.pathname.split('/').filter(Boolean)[0];
     if (/^[a-zA-Z0-9_-]{11}$/.test(id || '')) {
-      const out = new URL('https://www.youtube.com/watch');
+      const out = new URL('https://youtube.com/watch');
       out.searchParams.set('v', id);
       for (const [k, v] of u.searchParams.entries()) out.searchParams.set(k, v);
       if (hashTime && !out.searchParams.has('t') && !out.searchParams.has('start') && !out.searchParams.has('time_continue')) {
@@ -250,7 +250,7 @@ export function normalizeYoutubeUrl(url) {
   // /@Channel/shorts/<id> (common when sharing from a channel profile)
   const handleShorts = u.pathname.match(/^\/@[^/]+\/shorts\/([^/?#]+)/);
   if (/^[a-zA-Z0-9_-]{11}$/.test(handleShorts?.[1] || '')) {
-    const out = new URL('https://www.youtube.com/watch');
+    const out = new URL('https://youtube.com/watch');
     out.searchParams.set('v', handleShorts[1]);
     for (const [k, v] of u.searchParams.entries()) out.searchParams.set(k, v);
     if (hashTime && !out.searchParams.has('t') && !out.searchParams.has('start') && !out.searchParams.has('time_continue')) {
@@ -262,7 +262,7 @@ export function normalizeYoutubeUrl(url) {
   // /shorts/<id>
   const shorts = u.pathname.match(/^\/shorts\/([^/?#]+)/);
   if (/^[a-zA-Z0-9_-]{11}$/.test(shorts?.[1] || '')) {
-    const out = new URL('https://www.youtube.com/watch');
+    const out = new URL('https://youtube.com/watch');
     out.searchParams.set('v', shorts[1]);
     for (const [k, v] of u.searchParams.entries()) out.searchParams.set(k, v);
     if (hashTime && !out.searchParams.has('t') && !out.searchParams.has('start') && !out.searchParams.has('time_continue')) {
@@ -274,7 +274,7 @@ export function normalizeYoutubeUrl(url) {
   // /@Channel/live/<id>
   const handleLive = u.pathname.match(/^\/@[^/]+\/live\/([^/?#]+)/);
   if (/^[a-zA-Z0-9_-]{11}$/.test(handleLive?.[1] || '')) {
-    const out = new URL('https://www.youtube.com/watch');
+    const out = new URL('https://youtube.com/watch');
     out.searchParams.set('v', handleLive[1]);
     for (const [k, v] of u.searchParams.entries()) out.searchParams.set(k, v);
     if (hashTime && !out.searchParams.has('t') && !out.searchParams.has('start') && !out.searchParams.has('time_continue')) {
@@ -286,7 +286,7 @@ export function normalizeYoutubeUrl(url) {
   // /live/<id>
   const live = u.pathname.match(/^\/live\/([^/?#]+)/);
   if (/^[a-zA-Z0-9_-]{11}$/.test(live?.[1] || '')) {
-    const out = new URL('https://www.youtube.com/watch');
+    const out = new URL('https://youtube.com/watch');
     out.searchParams.set('v', live[1]);
     for (const [k, v] of u.searchParams.entries()) out.searchParams.set(k, v);
     if (hashTime && !out.searchParams.has('t') && !out.searchParams.has('start') && !out.searchParams.has('time_continue')) {
@@ -298,7 +298,7 @@ export function normalizeYoutubeUrl(url) {
   // /v/<id> (old embed-style URLs)
   const vPath = u.pathname.match(/^\/v\/([^/?#]+)/);
   if (/^[a-zA-Z0-9_-]{11}$/.test(vPath?.[1] || '')) {
-    const out = new URL('https://www.youtube.com/watch');
+    const out = new URL('https://youtube.com/watch');
     out.searchParams.set('v', vPath[1]);
     for (const [k, v] of u.searchParams.entries()) out.searchParams.set(k, v);
     if (hashTime && !out.searchParams.has('t') && !out.searchParams.has('start') && !out.searchParams.has('time_continue')) {
@@ -310,7 +310,7 @@ export function normalizeYoutubeUrl(url) {
   // /watch/<id>
   const watchPath = u.pathname.match(/^\/watch\/([^/?#]+)/);
   if (/^[a-zA-Z0-9_-]{11}$/.test(watchPath?.[1] || '')) {
-    const out = new URL('https://www.youtube.com/watch');
+    const out = new URL('https://youtube.com/watch');
     out.searchParams.set('v', watchPath[1]);
     for (const [k, v] of u.searchParams.entries()) out.searchParams.set(k, v);
     if (hashTime && !out.searchParams.has('t') && !out.searchParams.has('start') && !out.searchParams.has('time_continue')) {
@@ -322,7 +322,7 @@ export function normalizeYoutubeUrl(url) {
   // /embed/<id>
   const embed = u.pathname.match(/^\/embed\/([^/?#]+)/);
   if (/^[a-zA-Z0-9_-]{11}$/.test(embed?.[1] || '')) {
-    const out = new URL('https://www.youtube.com/watch');
+    const out = new URL('https://youtube.com/watch');
     out.searchParams.set('v', embed[1]);
     for (const [k, v] of u.searchParams.entries()) out.searchParams.set(k, v);
     if (hashTime && !out.searchParams.has('t') && !out.searchParams.has('start') && !out.searchParams.has('time_continue')) {
@@ -335,7 +335,7 @@ export function normalizeYoutubeUrl(url) {
   // (m.youtube.com, music.youtube.com, youtube-nocookie.com, etc.)
   if (/(^|\.)youtube\.com$/i.test(host) || /(^|\.)youtube-nocookie\.com$/i.test(host)) {
     u.protocol = 'https:';
-    u.hostname = 'www.youtube.com';
+    u.hostname = 'youtube.com';
   }
 
   if (hashTime && !u.searchParams.has('t') && !u.searchParams.has('start') && !u.searchParams.has('time_continue')) {
