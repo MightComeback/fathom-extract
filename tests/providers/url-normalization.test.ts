@@ -2,6 +2,7 @@ import { describe, test } from "node:test";
 import assert from "node:assert/strict";
 
 import { normalizeUrlLike } from "../../src/brief.js";
+import { normalizeVimeoUrl } from "../../src/providers/vimeo.js";
 
 // These tests focus on provider URL detection/normalization parity.
 // (Normalization happens in normalizeUrlLike.)
@@ -65,5 +66,12 @@ describe("provider URL normalization", () => {
       "https://player.vimeo.com/video/76979871/review/SECRETTOKEN/abcd1234?share=copy#t=30s"
     );
     assert.equal(u, "https://vimeo.com/76979871/review/SECRETTOKEN/abcd1234#t=30s");
+  });
+
+  test("normalizeVimeoUrl preserves review token for extractor parity", () => {
+    const u = normalizeVimeoUrl(
+      "https://player.vimeo.com/video/76979871/review/SECRETTOKEN/abcd1234?share=copy#t=30s"
+    );
+    assert.equal(u, "https://vimeo.com/76979871/review/SECRETTOKEN/abcd1234?h=abcd1234&t=30s");
   });
 });

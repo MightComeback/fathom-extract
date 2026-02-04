@@ -8,7 +8,7 @@ test('normalizeVimeoUrl canonicalizes common Vimeo URL shapes', () => {
   assert.equal(normalizeVimeoUrl('https://vimeo.com/123456789/abcdef1234'), 'https://vimeo.com/123456789?h=abcdef1234');
   assert.equal(
     normalizeVimeoUrl('https://vimeo.com/123456789/review/abcdef123456/abcdef1234'),
-    'https://vimeo.com/123456789?h=abcdef1234'
+    'https://vimeo.com/123456789/review/abcdef123456/abcdef1234?h=abcdef1234'
   );
 });
 

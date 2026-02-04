@@ -183,6 +183,29 @@ export function normalizeVimeoUrl(url) {
 
   const out = new URL(`https://vimeo.com/${id}`);
 
+  // Provider parity: Vimeo "review" links (private review pages) require the review token
+  // to access the clip. Preserve the /review/<token>/<hash?> path segments when present.
+  // Example inputs:
+  //   https://vimeo.com/<id>/review/<token>/<hash>
+  //   https://player.vimeo.com/video/<id>/review/<token>/<hash>
+  // Canonical output:
+  //   https://vimeo.com/<id>/review/<token>/<hash>?h=<hash>&t=...
+  // (We still also preserve/normalize the unlisted hash into ?h=... for downstream consistency.)
+  try {
+    const segs = (u.pathname || '/').split('/').map((x) => x.trim()).filter(Boolean);
+    const reviewIdx = segs.findIndex((x) => String(x || '').toLowerCase() === 'review');
+    if (reviewIdx !== -1) {
+      const token = String(segs[reviewIdx + 1] || '').trim();
+      const maybeHash = String(segs[reviewIdx + 2] || '').trim();
+      // Keep this conservative: token must exist; hash is optional.
+      if (token) {
+        out.pathname = `/${id}/review/${encodeURIComponent(token)}${maybeHash ? `/${encodeURIComponent(maybeHash)}` : ''}`;
+      }
+    }
+  } catch {
+    // ignore
+  }
+
   // Unlisted videos: Vimeo commonly uses either:
   //  - https://vimeo.com/<id>/<hash>
   //  - https://vimeo.com/<id>?h=<hash>
