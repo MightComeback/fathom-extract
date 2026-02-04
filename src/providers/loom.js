@@ -412,7 +412,7 @@ function cleanLoomCaptionText(s) {
     .replace(/&#x27;/gi, "'");
 
   // Decode numeric entities (e.g. &#8217; or &#x2019;).
-  v = v.replace(/&#(x?[0-9a-fA-F]+);/g, (m, rawNum) => {
+  v = v.replace(/&#(x?[0-9a-fA-F]+);?/g, (m, rawNum) => {
     try {
       const isHex = String(rawNum).toLowerCase().startsWith('x');
       const n = Number.parseInt(isHex ? String(rawNum).slice(1) : String(rawNum), isHex ? 16 : 10);

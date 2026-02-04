@@ -81,7 +81,7 @@ export function parseSimpleVtt(text) {
       .replace(/&#x27;/gi, "'");
 
     // Decode numeric HTML entities (e.g. &#8217; or &#x2019;) that are common in captions.
-    cleaned = cleaned.replace(/&#(x?[0-9a-fA-F]+);/g, (_m, raw) => {
+    cleaned = cleaned.replace(/&#(x?[0-9a-fA-F]+);?/g, (_m, raw) => {
       try {
         const isHex = String(raw).toLowerCase().startsWith('x');
         const n = Number.parseInt(isHex ? String(raw).slice(1) : String(raw), isHex ? 16 : 10);

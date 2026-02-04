@@ -110,6 +110,17 @@ Numeric: &#8217; and hex: &#x2019;
   assert.equal(text, 'Wait… that’s weird Dash: — and – plus “quotes” Numeric: ’ and hex: ’');
 });
 
+test('parseSimpleVtt decodes numeric entities even when missing a trailing semicolon', (t) => {
+  const vtt = `WEBVTT
+
+00:00:01.000 --> 00:00:04.000
+Decimal: &#8217 and hex: &#x2019 plus amp: &amp;#39
+`;
+
+  const text = parseSimpleVtt(vtt);
+  assert.equal(text, "Decimal: ’ and hex: ’ plus amp: '");
+});
+
 test('parseSimpleVtt returns empty string for empty input', (t) => {
   assert.equal(parseSimpleVtt(''), '');
   assert.equal(parseSimpleVtt(null), '');
