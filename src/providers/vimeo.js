@@ -70,8 +70,15 @@ export function extractVimeoId(url) {
   const isId = (x) => /^\d{3,}$/.test(String(x || ''));
 
   // Provider parity: Vimeo "manage" links (seen when copying from the dashboard).
-  // Example: https://vimeo.com/manage/videos/123456789
-  if (first === 'manage' && (segs[1] || '').toLowerCase() === 'videos' && isId(segs[2] || '')) {
+  // Examples:
+  //   https://vimeo.com/manage/videos/123456789
+  //   https://vimeo.com/manage/video/123456789
+  // (Sometimes followed by additional segments like /advanced.)
+  if (
+    first === 'manage' &&
+    (String(segs[1] || '').toLowerCase() === 'videos' || String(segs[1] || '').toLowerCase() === 'video') &&
+    isId(segs[2] || '')
+  ) {
     return String(segs[2]);
   }
 

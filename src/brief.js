@@ -299,7 +299,10 @@ export function normalizeUrlLike(s) {
       // First: common direct forms.
       // Vimeo dashboard copy/paste links:
       //   https://vimeo.com/manage/videos/<id>
-      const manage = path.match(/^\/manage\/videos\/(?<id>\d+)\b/i);
+      //   https://vimeo.com/manage/video/<id>
+      // (and sometimes with trailing segments like /advanced)
+      const manage = path.match(/^\/manage\/(?:videos|video)\/(?<id>\d+)\b/i);
+      const isManageLink = !!manage?.groups?.id;
       if (manage?.groups?.id) id = manage.groups.id;
 
       const direct = path.match(/^(?:\/video)?\/(?<id>\d+)(?:\/)?$/i);
@@ -321,7 +324,7 @@ export function normalizeUrlLike(s) {
         // Preserve that hash by normalizing it into the canonical ?h=... form.
         let h = url.searchParams.get('h') || '';
 
-        if (!h) {
+        if (!h && !isManageLink) {
           const segs = path.split('/').filter(Boolean);
 
           // Unlisted Vimeo URLs often include an extra hash segment (non-numeric token)

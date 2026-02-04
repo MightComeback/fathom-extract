@@ -187,6 +187,8 @@ test('normalizeUrlLike canonicalizes common provider URL variants', () => {
   assert.equal(normalizeUrlLike('staffpicks.vimeo.com/12345'), 'https://vimeo.com/12345');
   assert.equal(normalizeUrlLike('https://vimeo.com/ondemand/somefilm/987654321'), 'https://vimeo.com/987654321');
   assert.equal(normalizeUrlLike('https://vimeo.com/manage/videos/987654321'), 'https://vimeo.com/987654321');
+  assert.equal(normalizeUrlLike('https://vimeo.com/manage/video/987654321'), 'https://vimeo.com/987654321');
+  assert.equal(normalizeUrlLike('https://vimeo.com/manage/videos/987654321/advanced'), 'https://vimeo.com/987654321');
   // Avoid false positives: non-video sections should not be normalized into fake IDs.
   assert.equal(
     normalizeUrlLike('https://vimeo.com/blog/post/2026/02/03/some-announcement'),
