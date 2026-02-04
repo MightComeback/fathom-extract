@@ -577,6 +577,52 @@ export function parseLoomTranscript(text) {
   return raw;
 }
 
+// Provider parity: dedicated transcript URL extraction (similar to Fathom's extractFathomTranscriptUrl)
+// Extracts the transcript URL from Loom HTML by scanning the Apollo state for VideoTranscriptDetails.
+export function extractLoomTranscriptUrl(html) {
+  const h = String(html || '');
+  if (!h) return null;
+
+  try {
+    const idx = h.search(/window\.__APOLLO_STATE__\s*=\s*\{/);
+    if (idx === -1) return null;
+
+    const brace = h.indexOf('{', idx);
+    if (brace === -1) return null;
+
+    const obj = extractBalancedJsonObject(h, brace);
+    const state = obj ? JSON.parse(obj) : null;
+    if (!state || typeof state !== 'object') return null;
+
+    // Find VideoTranscriptDetails objects
+    const vtdKeys = Object.keys(state).filter((k) => k.startsWith('VideoTranscriptDetails:'));
+    if (!vtdKeys.length) return null;
+
+    // Prefer the first one with a valid URL
+    for (const k of vtdKeys) {
+      const vtd = state[k] || {};
+      const captions = vtd.captions_source_url;
+      const source = vtd.source_url;
+
+      // Prefer VTT over JSON when both exist
+      const preferred =
+        (isVttUrl(captions) ? captions : '') ||
+        (isVttUrl(source) ? source : '') ||
+        captions ||
+        source ||
+        '';
+
+      if (preferred) {
+        return normalizeLoomAssetUrl(preferred);
+      }
+    }
+  } catch {
+    // ignore
+  }
+
+  return null;
+}
+
 export async function fetchLoomOembed(url) {
   try {
     const u = new URL('https://www.loom.com/v1/oembed');
