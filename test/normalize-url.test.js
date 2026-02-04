@@ -86,6 +86,11 @@ test('normalizeUrlLike canonicalizes common provider URL variants', () => {
   assert.equal(normalizeUrlLike(`https://youtu.be/${id}#t=1m2s`), `https://youtube.com/watch?v=${id}&t=1m2s`);
   assert.equal(normalizeUrlLike(`https://youtu.be/${id}#start=62`), `https://youtube.com/watch?v=${id}&t=62`);
   assert.equal(normalizeUrlLike(`https://www.youtube.com/watch?v=${id}&feature=youtu.be`), `https://youtube.com/watch?v=${id}`);
+  // Provider parity: strip playlist params for canonical single-video URLs.
+  assert.equal(
+    normalizeUrlLike(`https://www.youtube.com/watch?v=${id}&list=PL1234567890ABCDE&index=4`),
+    `https://youtube.com/watch?v=${id}`
+  );
   assert.equal(normalizeUrlLike(`https://www.youtube.com/watch?v=${id}&time_continue=62`), `https://youtube.com/watch?v=${id}&t=62`);
   // Provider parity: accept common YouTube subdomains and normalize the host.
   assert.equal(normalizeUrlLike(`https://m.youtube.com/watch?v=${id}`), `https://youtube.com/watch?v=${id}`);

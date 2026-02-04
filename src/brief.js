@@ -114,6 +114,14 @@ export function normalizeUrlLike(s) {
       // Normalize host.
       url.hostname = 'youtube.com';
 
+      // Provider parity: playlist-related params are irrelevant when extracting a single video
+      // and often show up in share/copy URLs. Strip them so we canonicalize to a stable watch URL.
+      // (We still keep time deep-links via t/start/time_continue.)
+      url.searchParams.delete('list');
+      url.searchParams.delete('index');
+      url.searchParams.delete('start_radio');
+      url.searchParams.delete('rv');
+
       // Mobile shares often use /attribution_link with an encoded inner path.
       // Example:
       //   https://www.youtube.com/attribution_link?u=%2Fwatch%3Fv%3Dabc123%26t%3D30s%26feature%3Dshare
