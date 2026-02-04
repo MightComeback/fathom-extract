@@ -8,7 +8,7 @@ describe('normalizeUrlLike - provider parity', () => {
       normalizeUrlLike(
         'https://player.vimeo.com/video/12345?badge=0&autopause=0&player_id=0&app_id=58479#t=1m2s'
       ),
-      'https://vimeo.com/12345#t=1m2s'
+      'https://vimeo.com/12345?t=1m2s'
     );
   });
 
@@ -35,7 +35,7 @@ describe('normalizeUrlLike - provider parity', () => {
       normalizeUrlLike(
         'https://player.vimeo.com/video/12345?h=abcdef&badge=0#t=90s'
       ),
-      'https://vimeo.com/12345?h=abcdef#t=90s'
+      'https://vimeo.com/12345?h=abcdef&t=90s'
     );
   });
 
@@ -55,12 +55,12 @@ describe('normalizeUrlLike - provider parity', () => {
     );
   });
 
-  test('does not canonicalize Vimeo review URLs (must preserve token)', () => {
+  test('canonicalizes Vimeo review URLs (preserves token + access hash + time)', () => {
     assert.equal(
       normalizeUrlLike(
         'https://vimeo.com/123456789/review/abcdef123456/abcdef1234?utm_source=x#t=10s'
       ),
-      'https://vimeo.com/123456789/review/abcdef123456/abcdef1234#t=10s'
+      'https://vimeo.com/123456789/review/abcdef123456/abcdef1234?h=abcdef1234&t=10s'
     );
   });
 
@@ -81,14 +81,14 @@ describe('normalizeUrlLike - provider parity', () => {
   test('canonicalizes Vimeo groups videos URLs', () => {
     assert.equal(
       normalizeUrlLike('https://vimeo.com/groups/somegroup/videos/12345?utm_source=x#t=1m2s'),
-      'https://vimeo.com/12345#t=1m2s'
+      'https://vimeo.com/12345?t=1m2s'
     );
   });
 
   test('canonicalizes Vimeo channels URLs that include an unlisted hash segment', () => {
     assert.equal(
       normalizeUrlLike('https://vimeo.com/channels/foo/12345/abcdef?utm_source=x#t=10s'),
-      'https://vimeo.com/12345?h=abcdef#t=10s'
+      'https://vimeo.com/12345?h=abcdef&t=10s'
     );
   });
 });

@@ -95,6 +95,19 @@ export function extractVimeoId(url) {
     if (looksHashy) return segs[0];
   }
 
+  // Provider parity: unlisted hash segments also appear on collection routes, e.g.:
+  //   https://vimeo.com/channels/<name>/<id>/<hash>
+  //   https://vimeo.com/groups/<name>/videos/<id>/<hash>
+  //   https://player.vimeo.com/video/<id>/<hash>
+  // If the path ends with /<id>/<hash>, treat it as a clip URL.
+  if (segs.length >= 2 && isId(segs[segs.length - 2]) && !isBlocked) {
+    const id = String(segs[segs.length - 2] || '');
+    const maybeHash = String(segs[segs.length - 1] || '');
+    const looksHashy = /^[a-z0-9]+$/i.test(maybeHash) && maybeHash.length >= 6;
+    const isKnownKeyword = /^(?:review|manage|video|videos|channels|groups|album|showcase|advanced)$/i.test(maybeHash);
+    if (looksHashy && !isKnownKeyword) return id;
+  }
+
   // Provider parity: Vimeo review links are still clip URLs.
   // Example: https://vimeo.com/<id>/review/<token>/<hash>
   if (segs.length >= 3 && isId(segs[0]) && String(segs[1] || '').toLowerCase() === 'review' && !isBlocked) {
@@ -246,9 +259,26 @@ export function normalizeVimeoUrl(url) {
     if (segs.length >= 2 && String(segs[0]) === String(id)) {
       const maybe = String(segs[1] || '');
       const looksHashy = /^[a-z0-9]+$/i.test(maybe) && maybe.length >= 6;
-      const isKnownKeyword = /^(?:review|manage|video|videos|channels|groups|album|showcase)$/i.test(maybe);
+      const isKnownKeyword = /^(?:review|manage|video|videos|channels|groups|album|showcase|advanced)$/i.test(maybe);
       if (looksHashy && !isKnownKeyword) {
         hashToken = maybe;
+      }
+    }
+
+    // Provider parity: unlisted hashes also show up on non-root clip routes, e.g.:
+    //  - https://player.vimeo.com/video/<id>/<hash>
+    //  - https://vimeo.com/channels/<name>/<id>/<hash>
+    // Find any "<id>/<hash>" pair in the path and convert it to ?h=...
+    if (!hashToken) {
+      for (let i = 0; i < segs.length - 1; i++) {
+        if (String(segs[i]) !== String(id)) continue;
+        const maybe = String(segs[i + 1] || '');
+        const looksHashy = /^[a-z0-9]+$/i.test(maybe) && maybe.length >= 6;
+        const isKnownKeyword = /^(?:review|manage|video|videos|channels|groups|album|showcase|advanced)$/i.test(maybe);
+        if (looksHashy && !isKnownKeyword) {
+          hashToken = maybe;
+          break;
+        }
       }
     }
 

@@ -22,7 +22,7 @@ describe("normalizeUrlLike - tracking params", () => {
       normalizeUrlLike(
         "https://player.vimeo.com/video/12345/abcdef?share=copy&dnt=1&app_id=122963#t=1m2s",
       ),
-      "https://vimeo.com/12345?h=abcdef#t=1m2s",
+      "https://vimeo.com/12345?h=abcdef&t=1m2s",
     );
   });
 

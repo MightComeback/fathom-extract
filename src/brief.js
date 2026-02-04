@@ -3,7 +3,7 @@
 import { isFathomUrl } from './providers/fathom.js';
 import { isLoomUrl } from './providers/loom.js';
 import { isYoutubeUrl } from './providers/youtube.js';
-import { isVimeoUrl, isVimeoDomain } from './providers/vimeo.js';
+import { isVimeoUrl, isVimeoDomain, normalizeVimeoUrl } from './providers/vimeo.js';
 
 // MIG-14: extraction pipeline expected to be resilient to missing optional fields.
 function oneLine(s) {
@@ -254,155 +254,10 @@ export function normalizeUrlLike(s) {
     }
 
     // Vimeo
-    // Accept subdomains like staffpicks.vimeo.com as well as player.vimeo.com.
+    // Provider parity: delegate Vimeo URL normalization to the provider helper so
+    // review/unlisted/showcase/manage URLs stay access-safe and consistent.
     if (host === 'player.vimeo.com' || host === 'vimeo.com' || host.endsWith('.vimeo.com')) {
-      // Avoid false positives for non-video pages like:
-      //   https://vimeo.com/blog/post/2026/02/03/... (not a clip)
-      // We only normalize when the path looks like a real video URL.
-      const segsAll = path.split('/').filter(Boolean);
-      const first = String(segsAll[0] || '').toLowerCase();
-
-      // Provider parity: Vimeo "review" links are real videos but often require the review token.
-      // Example: https://vimeo.com/<id>/review/<token>/<hash>
-      // Do not canonicalize these to https://vimeo.com/<id> (that would drop the token and break access).
-      if (/\/review\//i.test(path)) {
-        // Vimeo "review" links are real videos but often require the review token.
-        // Example: https://vimeo.com/<id>/review/<token>/<hash>
-        // Do not canonicalize these to https://vimeo.com/<id> (that would drop the token and break access).
-        // Still, normalize common player-style review URLs to a stable vimeo.com form.
-        // Example:
-        //   https://player.vimeo.com/video/<id>/review/<token>/...
-        //   -> https://vimeo.com/<id>/review/<token>/...
-        url.hostname = 'vimeo.com';
-
-        const m = String(url.pathname || '').match(/^\/video\/(?<id>\d+)(?<rest>\/review\/.*)$/i);
-        if (m?.groups?.id && m?.groups?.rest) {
-          url.pathname = `/${m.groups.id}${m.groups.rest}`;
-        }
-
-        return url.toString();
-      }
-
-      const blockedTopLevel = new Set([
-        'blog',
-        'help',
-        'upgrade',
-        'terms',
-        'privacy',
-        'about',
-        'features',
-        'api',
-        'apps',
-        'categories',
-        'event',
-        'events',
-        // Provider parity: Vimeo on-demand pages are not stable clip URLs (often paywalled).
-        // Do not canonicalize them to https://vimeo.com/<id>; let vimeoNonVideoReason handle them.
-        'ondemand',
-      ]);
-      if (blockedTopLevel.has(first)) return raw;
-
-      // Provider parity / correctness:
-      // Vimeo showcases are collections. The top-level showcase URL is *not* a clip URL.
-      // Only normalize showcases when the URL explicitly includes a video id, e.g.:
-      //   https://vimeo.com/showcase/<showcaseId>/video/<videoId>
-      if (first === 'showcase' && !/\/video\/\d+\b/i.test(path)) return raw;
-
-      // Vimeo has many URL shapes:
-      //   https://vimeo.com/123
-      //   https://vimeo.com/channels/foo/123
-      //   https://vimeo.com/ondemand/bar/123
-      //   https://player.vimeo.com/video/123
-      // Normalize everything to https://vimeo.com/<id>[?h=...][#t=...]
-      let id = '';
-
-      // Preserve common deep-link time anchors.
-      // Vimeo shares typically use hash fragments like #t=1m2s, but we've also seen ?t=... in the wild.
-      function vimeoTimeSuffix(u) {
-        // Vimeo deep-links commonly use #t=..., but we also see ?t=... and ?start=... in the wild.
-        // Normalize all time hints into a canonical #t=... fragment.
-        const fromQuery = u.searchParams.get('t') || u.searchParams.get('start');
-        if (fromQuery) return `#t=${encodeURIComponent(fromQuery)}`;
-
-        const hash = String(u.hash || '').replace(/^#/, '').trim();
-        if (!hash) return '';
-        const hp = new URLSearchParams(hash);
-        const fromHash = hp.get('t') || hp.get('start');
-        if (!fromHash) return '';
-        return `#t=${encodeURIComponent(fromHash)}`;
-      }
-
-      // First: common direct forms.
-      // Vimeo dashboard copy/paste links:
-      //   https://vimeo.com/manage/videos/<id>
-      //   https://vimeo.com/manage/video/<id>
-      // (and sometimes with trailing segments like /advanced)
-      const manage = path.match(/^\/manage\/(?:videos|video)\/(?<id>\d+)\b/i);
-      const isManageLink = !!manage?.groups?.id;
-      if (manage?.groups?.id) id = manage.groups.id;
-
-      const direct = path.match(/^(?:\/video)?\/(?<id>\d+)(?:\/)?$/i);
-      if (!id && direct?.groups?.id) id = direct.groups.id;
-
-      // Fallback: pick the last numeric path segment.
-      if (!id) {
-        const segs = path.split('/').filter(Boolean);
-        for (let i = segs.length - 1; i >= 0; i--) {
-          if (/^\d+$/.test(segs[i] || '')) {
-            id = segs[i];
-            break;
-          }
-        }
-      }
-
-      if (id) {
-        // Unlisted Vimeo URLs often look like: https://vimeo.com/<id>/<hash>
-        // Preserve that hash by normalizing it into the canonical ?h=... form.
-        let h = url.searchParams.get('h') || '';
-
-        if (!h && !isManageLink) {
-          const segs = path.split('/').filter(Boolean);
-
-          // Unlisted Vimeo URLs often include an extra hash segment (non-numeric token)
-          // that is required for access.
-          // Canonical forms:
-          //   /<id>/<hash>
-          //   /video/<id>/<hash>
-          // But we also see these hashes appended to other valid clip routes, e.g.:
-          //   /channels/<name>/<id>/<hash>
-          // Preserve the hash by normalizing it into the canonical ?h=... form.
-
-          // 1) Exact canonical forms.
-          if (
-            segs.length === 2 &&
-            segs[0] === id &&
-            /^[a-zA-Z0-9]+$/.test(segs[1] || '')
-          ) {
-            h = segs[1];
-          } else if (
-            segs.length === 3 &&
-            String(segs[0] || '').toLowerCase() === 'video' &&
-            segs[1] === id &&
-            /^[a-zA-Z0-9]+$/.test(segs[2] || '')
-          ) {
-            h = segs[2];
-          }
-
-          // 2) More general: any path that *ends* with /<id>/<hash>.
-          if (!h && segs.length >= 2) {
-            const last = String(segs[segs.length - 1] || '');
-            const prev = String(segs[segs.length - 2] || '');
-            const looksHashy = /^[a-zA-Z0-9]+$/.test(last) && last.length >= 6;
-            if (prev === id && looksHashy) {
-              h = last;
-            }
-          }
-        }
-
-        const time = vimeoTimeSuffix(url);
-        return `https://vimeo.com/${id}${h ? `?h=${encodeURIComponent(h)}` : ''}${time}`;
-      }
-      return raw;
+      return normalizeVimeoUrl(url.toString());
     }
 
     return raw;

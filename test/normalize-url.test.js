@@ -178,11 +178,11 @@ test('normalizeUrlLike canonicalizes common provider URL variants', () => {
   assert.equal(normalizeUrlLike('[Vimeo](player.vimeo.com/video/12345?h=abc)'), 'https://vimeo.com/12345?h=abc');
   assert.equal(normalizeUrlLike('https://vimeo.com/12345/abcdef'), 'https://vimeo.com/12345?h=abcdef');
   assert.equal(normalizeUrlLike('https://player.vimeo.com/video/12345/abcdef'), 'https://vimeo.com/12345?h=abcdef');
-  assert.equal(normalizeUrlLike('https://vimeo.com/12345#t=62'), 'https://vimeo.com/12345#t=62');
-  assert.equal(normalizeUrlLike('https://vimeo.com/12345?t=1m2s'), 'https://vimeo.com/12345#t=1m2s');
-  assert.equal(normalizeUrlLike('https://vimeo.com/12345?start=62&amp;foo=bar'), 'https://vimeo.com/12345#t=62');
-  assert.equal(normalizeUrlLike('https://vimeo.com/12345?start=62'), 'https://vimeo.com/12345#t=62');
-  assert.equal(normalizeUrlLike('https://vimeo.com/12345#start=62'), 'https://vimeo.com/12345#t=62');
+  assert.equal(normalizeUrlLike('https://vimeo.com/12345#t=62'), 'https://vimeo.com/12345?t=62');
+  assert.equal(normalizeUrlLike('https://vimeo.com/12345?t=1m2s'), 'https://vimeo.com/12345?t=1m2s');
+  assert.equal(normalizeUrlLike('https://vimeo.com/12345?start=62&amp;foo=bar'), 'https://vimeo.com/12345?t=62');
+  assert.equal(normalizeUrlLike('https://vimeo.com/12345?start=62'), 'https://vimeo.com/12345?t=62');
+  assert.equal(normalizeUrlLike('https://vimeo.com/12345#start=62'), 'https://vimeo.com/12345?t=62');
   assert.equal(normalizeUrlLike('https://vimeo.com/channels/staffpicks/12345'), 'https://vimeo.com/12345');
   // Provider parity: preserve unlisted hash tokens even when they appear on channel/showcase routes.
   assert.equal(normalizeUrlLike('https://vimeo.com/channels/staffpicks/12345/abcdef'), 'https://vimeo.com/12345?h=abcdef');
@@ -193,8 +193,8 @@ test('normalizeUrlLike canonicalizes common provider URL variants', () => {
   // Correctness: showcases are collections; the showcase root URL is not a clip.
   assert.equal(normalizeUrlLike('https://vimeo.com/showcase/12345'), 'https://vimeo.com/showcase/12345');
   assert.equal(normalizeUrlLike('https://vimeo.com/showcase/12345/'), 'https://vimeo.com/showcase/12345/');
-  // But if the showcase URL references a specific video, normalize to that video id.
-  assert.equal(normalizeUrlLike('https://vimeo.com/showcase/12345/video/67890'), 'https://vimeo.com/67890');
+  // But if the showcase URL references a specific video, preserve the showcase context (access-safe).
+  assert.equal(normalizeUrlLike('https://vimeo.com/showcase/12345/video/67890'), 'https://vimeo.com/showcase/12345/video/67890');
   assert.equal(normalizeUrlLike('https://staffpicks.vimeo.com/12345'), 'https://vimeo.com/12345');
   assert.equal(normalizeUrlLike('staffpicks.vimeo.com/12345'), 'https://vimeo.com/12345');
   // On-demand pages are not stable clip URLs; keep as-is so the extractor can surface a clear actionable error.
