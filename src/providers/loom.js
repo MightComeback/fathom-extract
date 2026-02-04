@@ -37,7 +37,8 @@ export function normalizeLoomUrl(url) {
   const id = extractLoomId(u.toString());
   if (!id) return u.toString();
 
-  const out = new URL(`https://www.loom.com/share/${id}`);
+  // Canonical host: loom.com (matches README + brief normalization, avoids extra redirects).
+  const out = new URL(`https://loom.com/share/${id}`);
 
   // Preserve session id for private Loom links.
   const sid = u.searchParams.get('sid');
