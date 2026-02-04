@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert';
-import { isYoutubeUrl, isYoutubeClipUrl, extractYoutubeId, extractYoutubeMetadataFromHtml } from '../src/providers/youtube.js';
+import { isYoutubeUrl, isYoutubeClipUrl, extractYoutubeId, extractYoutubeIdFromClipHtml, extractYoutubeMetadataFromHtml } from '../src/providers/youtube.js';
 
 test('isYoutubeUrl identifies valid YouTube URLs', () => {
   const valid = [
@@ -65,6 +65,11 @@ test('extractYoutubeId extracts 11-char ID', () => {
     extractYoutubeId('https://www.youtube.com/attribution_link?a=1&u=%252Fwatch%253Fv%253DdQw4w9WgXcQ%2526feature%253Dshare'),
     'dQw4w9WgXcQ'
   );
+});
+
+test('extractYoutubeIdFromClipHtml extracts video id from canonicalBaseUrl payloads', () => {
+  const html = '<html><body>"canonicalBaseUrl":"\\/watch?v=dQw4w9WgXcQ"</body></html>';
+  assert.strictEqual(extractYoutubeIdFromClipHtml(html), 'dQw4w9WgXcQ');
 });
 
 test('extractYoutubeMetadataFromHtml parses initial player response', () => {
