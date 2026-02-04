@@ -62,6 +62,10 @@ export function parseSimpleVtt(text) {
       .replace(/&lt;/gi, '<')
       .replace(/&gt;/gi, '>')
       .replace(/&quot;/gi, '"')
+      // Directional/invisible marks sometimes appear in provider captions.
+      // Strip them so downstream text heuristics don't get confused.
+      .replace(/&lrm;/gi, '')
+      .replace(/&rlm;/gi, '')
       // Apostrophes show up in provider transcripts in a few common encodings.
       .replace(/&apos;/gi, "'")
       .replace(/&#39;/g, "'")

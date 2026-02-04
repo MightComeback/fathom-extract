@@ -79,6 +79,20 @@ Rock &#x27;n&#39; roll
   assert.equal(text, "Don't stop Rock 'n' roll");
 });
 
+test('parseSimpleVtt strips common directional marks (&lrm; / &rlm;)', (t) => {
+  const vtt = `WEBVTT
+
+00:00:01.000 --> 00:00:04.000
+Hello&lrm; world
+
+00:00:04.000 --> 00:00:08.000
+Good&rlm;bye
+`;
+
+  const text = parseSimpleVtt(vtt);
+  assert.equal(text, 'Hello world Goodbye');
+});
+
 test('parseSimpleVtt returns empty string for empty input', (t) => {
   assert.equal(parseSimpleVtt(''), '');
   assert.equal(parseSimpleVtt(null), '');
