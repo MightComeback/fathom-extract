@@ -283,6 +283,12 @@ export function vimeoNonVideoReason(url) {
     return 'Vimeo blog pages are not supported. Open the embedded video and copy its Vimeo clip URL (https://vimeo.com/<id>).';
   }
 
+  // Provider parity: Vimeo on-demand pages usually do not contain a stable numeric clip id in the URL.
+  // Ask the user to open the player and copy the actual clip URL instead.
+  if (first === 'ondemand') {
+    return 'Vimeo on-demand pages are not supported. Open the video player and copy the actual Vimeo clip URL (typically https://vimeo.com/<id> or https://player.vimeo.com/video/<id>).';
+  }
+
   if (first === 'showcase' && !/\/video\/\d+\b/i.test(u.pathname || '')) {
     return 'Vimeo showcase pages are not supported. Open the showcase video and copy the actual clip URL (https://vimeo.com/<id> or https://vimeo.com/showcase/<showcaseId>/video/<videoId>).';
   }
