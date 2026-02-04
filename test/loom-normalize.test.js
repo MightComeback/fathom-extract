@@ -14,6 +14,16 @@ test('normalizeLoomUrl canonicalizes common Loom URL shapes', () => {
     'https://www.loom.com/share/1234567890abcdef'
   );
 
+  // Provider parity: useloom.com -> loom.com
+  assert.strictEqual(
+    normalizeLoomUrl('https://www.useloom.com/share/1234567890abcdef'),
+    'https://www.loom.com/share/1234567890abcdef'
+  );
+  assert.strictEqual(
+    normalizeLoomUrl('https://share.useloom.com/share/1234567890abcdef'),
+    'https://www.loom.com/share/1234567890abcdef'
+  );
+
   // bare loom.com/<id> -> /share/<id>
   assert.strictEqual(
     normalizeLoomUrl('https://loom.com/1234567890abcdef'),
@@ -39,6 +49,11 @@ test('normalizeLoomUrl preserves sid for private links', () => {
 
   assert.strictEqual(
     normalizeLoomUrl('https://share.loom.com/share/1234567890abcdef?sid=xyz'),
+    'https://www.loom.com/share/1234567890abcdef?sid=xyz'
+  );
+
+  assert.strictEqual(
+    normalizeLoomUrl('https://share.useloom.com/share/1234567890abcdef?sid=xyz'),
     'https://www.loom.com/share/1234567890abcdef?sid=xyz'
   );
 });

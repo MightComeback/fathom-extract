@@ -28,9 +28,11 @@ export function normalizeLoomUrl(url) {
     return String(url || '').trim();
   }
 
-  // Only normalize loom.com domains.
+  // Only normalize Loom domains.
+  // Provider parity: older Loom links sometimes use useloom.com.
   const host = u.hostname.toLowerCase();
-  if (!/(^|\.)loom\.com$/i.test(host)) return u.toString();
+  const isLoomHost = /(^|\.)loom\.com$/i.test(host) || /(^|\.)useloom\.com$/i.test(host);
+  if (!isLoomHost) return u.toString();
 
   const id = extractLoomId(u.toString());
   if (!id) return u.toString();
@@ -64,7 +66,7 @@ export function isLoomDomain(url) {
   try {
     const u = new URL(s);
     const host = u.hostname.toLowerCase();
-    return /(^|\.)loom\.com$/i.test(host);
+    return /(^|\.)loom\.com$/i.test(host) || /(^|\.)useloom\.com$/i.test(host);
   } catch {
     return false;
   }
@@ -84,7 +86,7 @@ export function loomNonVideoReason(url) {
   }
 
   const host = u.hostname.toLowerCase();
-  if (!/(^|\.)loom\.com$/i.test(host)) return '';
+  if (!/(^|\.)loom\.com$/i.test(host) && !/(^|\.)useloom\.com$/i.test(host)) return '';
 
   // If it's a valid Loom video URL, don't flag it.
   if (extractLoomId(s)) return '';
@@ -153,7 +155,8 @@ export function extractLoomId(url) {
 
   const host = u.hostname.toLowerCase();
   // Loom links can come from subdomains (e.g. share.loom.com).
-  if (!/(^|\.)loom\.com$/i.test(host)) return null;
+  // Provider parity: older Loom links sometimes use useloom.com.
+  if (!/(^|\.)loom\.com$/i.test(host) && !/(^|\.)useloom\.com$/i.test(host)) return null;
 
   const parts = u.pathname.split('/').filter(Boolean);
 
