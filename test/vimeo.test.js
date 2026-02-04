@@ -15,6 +15,8 @@ test('isVimeoUrl identifies Vimeo URLs', () => {
   assert.ok(isVimeoUrl('https://player.vimeo.com/video/12345'));
   // Provider parity: unlisted Vimeo URLs include a non-numeric hash segment.
   assert.ok(isVimeoUrl('https://vimeo.com/123456789/abcdef1234'));
+  // Provider parity: legacy embeds can use clip_id in query.
+  assert.ok(isVimeoUrl('https://vimeo.com/moogaloop.swf?clip_id=123456789'));
 
   // Provider parity: avoid false positives for non-video Vimeo pages with date-like paths.
   assert.equal(isVimeoUrl('https://vimeo.com/blog/post/2026/02/03/some-article'), false);
@@ -36,6 +38,7 @@ test('extractVimeoId extracts numeric ID', () => {
   assert.equal(extractVimeoId('https://player.vimeo.com/video/555666777'), '555666777');
   assert.equal(extractVimeoId('https://player.vimeo.com/video/12345'), '12345');
   assert.equal(extractVimeoId('https://vimeo.com/123456789/abcdef1234'), '123456789');
+  assert.equal(extractVimeoId('https://vimeo.com/moogaloop.swf?clip_id=123456789'), '123456789');
   // Provider parity: review URLs are still valid clip URLs (and often require the token).
   assert.equal(extractVimeoId('https://vimeo.com/123456789/review/abcdef123456/abcdef1234'), '123456789');
 

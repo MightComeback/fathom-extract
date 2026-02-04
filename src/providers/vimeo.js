@@ -116,6 +116,11 @@ export function extractVimeoId(url) {
   // Vimeo pages can be served from vimeo.com or the embed host player.vimeo.com.
   if (!/(^|\.)vimeo\.com$/i.test(host) && host !== 'player.vimeo.com') return null;
 
+  // Provider parity: some legacy embeds use clip_id query param (e.g. moogaloop.swf?clip_id=1234).
+  // Treat those as video URLs when the clip_id is numeric.
+  const clipId = String(u.searchParams.get('clip_id') || '').trim();
+  if (/^\d{3,}$/.test(clipId)) return clipId;
+
   const segs = (u.pathname || '/')
     .split('/')
     .map((x) => x.trim())
