@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
-import { parseVimeoTranscript } from '../src/providers/vimeo.js';
+import { parseVimeoTranscript, extractVimeoTranscriptUrl } from '../src/providers/vimeo.js';
 
 test('parseVimeoTranscript parses JSON cue lists and sorts by start time when present', () => {
   const body = JSON.stringify({
@@ -35,4 +35,86 @@ test('parseVimeoTranscript strips lightweight HTML tags and decodes entities in 
   });
 
   assert.equal(parseVimeoTranscript(body), "0:00 One & Two\n0:01 It's fine — really.");
+});
+
+// Provider parity: extractVimeoTranscriptUrl tests (matches Fathom/Loom coverage)
+test('extractVimeoTranscriptUrl extracts transcript URL from clip_page_config', () => {
+  const html = `
+    <html>
+      <script>
+        window.vimeo = window.vimeo || {};
+        vimeo.clip_page_config = {
+          "request": {
+            "text_tracks": [
+              { "url": "https://captions.vimeo.com/transcript.vtt", "lang": "en" },
+              { "url": "https://captions.vimeo.com/spanish.vtt", "lang": "es" }
+            ]
+          }
+        };
+      </script>
+    </html>
+  `;
+
+  const url = extractVimeoTranscriptUrl(html);
+  assert.equal(url, 'https://captions.vimeo.com/transcript.vtt');
+});
+
+test('extractVimeoTranscriptUrl prefers English tracks', () => {
+  const html = `
+    <html>
+      <script>
+        vimeo.clip_page_config = {
+          "request": {
+            "text_tracks": [
+              { "url": "https://captions.vimeo.com/french.vtt", "lang": "fr", "name": "French" },
+              { "url": "https://captions.vimeo.com/english.vtt", "lang": "en", "name": "English" }
+            ]
+          }
+        };
+      </script>
+    </html>
+  `;
+
+  const url = extractVimeoTranscriptUrl(html);
+  assert.equal(url, 'https://captions.vimeo.com/english.vtt');
+});
+
+test('extractVimeoTranscriptUrl forces VTT format for texttrack endpoints', () => {
+  const html = `
+    <html>
+      <script>
+        vimeo.clip_page_config = {
+          "request": {
+            "text_tracks": [
+              { "url": "https://vimeo.com/texttrack/123456?format=srt", "lang": "en" }
+            ]
+          }
+        };
+      </script>
+    </html>
+  `;
+
+  const url = extractVimeoTranscriptUrl(html);
+  assert.ok(url?.includes('format=vtt'));
+  assert.ok(!url?.includes('format=srt'));
+});
+
+test('extractVimeoTranscriptUrl returns null when no transcript available', () => {
+  const html = `
+    <html>
+      <script>
+        vimeo.clip_page_config = {
+          "request": { "text_tracks": [] }
+        };
+      </script>
+    </html>
+  `;
+
+  const url = extractVimeoTranscriptUrl(html);
+  assert.equal(url, null);
+});
+
+test('extractVimeoTranscriptUrl returns null for invalid HTML', () => {
+  assert.equal(extractVimeoTranscriptUrl(''), null);
+  assert.equal(extractVimeoTranscriptUrl('<html>no config here</html>'), null);
 });
