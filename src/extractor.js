@@ -404,17 +404,35 @@ export function extractAnyJsonUrls(html, keys = []) {
     return raw;
   };
 
+  // For bare token scanning, decode common JSON escape sequences across the HTML first.
+  // This lets us match tokens like https:\/\/... and \/\/. reliably without a fragile regex.
+  const hScan = unescapeJsonSlashes(h);
+
   for (const k of keys) {
     // Allow both JSON-ish: "downloadUrl":"..." and JS-ish: downloadUrl: "..." (or single quotes).
     // Capture a full quoted string literal so we can decode escaped sequences inside it.
-    const re = new RegExp(
+    const reQuoted = new RegExp(
       `(?:["']?${k}["']?)\\s*[:=]\\s*(\\"(?:\\\\.|[^\\\"])*\\"|'(?:\\\\.|[^'])*')`,
       'i'
     );
-    const m = h.match(re);
-    if (m) {
-      const decoded = decodeJsonStringLiteral(m[1]);
+    const mQ = h.match(reQuoted);
+    if (mQ) {
+      const decoded = decodeJsonStringLiteral(mQ[1]);
       return unescapeJsonSlashes(decoded);
+    }
+
+    // Provider parity: some pages inline unquoted URL tokens in JS objects:
+    //   mediaUrl: https://cdn.example.com/video.mp4?x=1&y=2
+    //   backupUrl: //cdn.example.com/video.mp4
+    // Accept a conservative URL token up to a delimiter.
+    const reBare = new RegExp(
+      `(?:["']?${k}["']?)\\s*[:=]\\s*(?<u>(?:https?:\/\/|\/\/)[^\\"'\\s\\r\\n;,)\\]}>]+)`,
+      'i'
+    );
+    const mB = hScan.match(reBare);
+    if (mB?.groups?.u) {
+      const raw = String(mB.groups.u || '').trim();
+      return raw.startsWith('//') ? `https:${raw}` : raw;
     }
   }
   return '';
