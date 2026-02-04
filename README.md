@@ -1,6 +1,8 @@
 # video-extract
 
-Turn a Fathom, Loom, YouTube, or Vimeo link into an **actionable bug report brief** (`video-brief`), and optionally extract the **transcript + video** (`video-extract` / `vdxtr`).
+Turn a Fathom, Loom, YouTube, or Vimeo link into an **actionable bug report brief** (`video-brief`), and optionally extract the **transcript + video** (`vdxtr` / `video-extract`).
+
+Legacy binaries (`fathom2action`, `fathom-extract`) are kept for compatibility only; new usage should prefer `video-brief` and `vdxtr`.
 
 ## Install
 
@@ -100,7 +102,7 @@ vdxtr --help
 
 ### Compatibility (legacy commands)
 
-These are kept for older scripts, but new usage should prefer `video-brief` / `video-extract` / `vdxtr`.
+These are kept for older scripts only (compat). New usage should prefer `video-brief` and `vdxtr`.
 
 ```bash
 fathom2action "https://fathom.video/share/<TOKEN>"
