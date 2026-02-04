@@ -25,3 +25,14 @@ test('parseVimeoTranscript falls back to VTT parsing', () => {
   const vtt = `WEBVTT\n\n00:00:00.000 --> 00:00:01.000\nHello\n\n00:00:01.000 --> 00:00:02.000\nWorld\n`;
   assert.equal(parseVimeoTranscript(vtt), 'Hello World');
 });
+
+test('parseVimeoTranscript strips lightweight HTML tags and decodes entities in JSON cues', () => {
+  const body = JSON.stringify({
+    cues: [
+      { start: 0, text: '<c>One</c> &amp; Two' },
+      { start: 1, text: 'It&#39;s fine &mdash; really.' },
+    ],
+  });
+
+  assert.equal(parseVimeoTranscript(body), "One & Two It's fine — really.");
+});

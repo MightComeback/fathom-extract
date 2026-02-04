@@ -194,6 +194,48 @@ export function vimeoNonVideoReason(url) {
   return '';
 }
 
+function cleanCaptionText(s) {
+  let v = String(s || '');
+  if (!v) return '';
+
+  // Strip lightweight caption markup (common in Vimeo transcript JSON too).
+  v = v.replace(/<[^>]+>/g, '');
+
+  // Decode a small deterministic set of common entities.
+  v = v
+    .replace(/&nbsp;/gi, ' ')
+    .replace(/&amp;/gi, '&')
+    .replace(/&lt;/gi, '<')
+    .replace(/&gt;/gi, '>')
+    .replace(/&quot;/gi, '"')
+    .replace(/&mdash;/gi, '—')
+    .replace(/&ndash;/gi, '–')
+    .replace(/&hellip;/gi, '…')
+    .replace(/&ldquo;/gi, '“')
+    .replace(/&rdquo;/gi, '”')
+    .replace(/&lsquo;/gi, '‘')
+    .replace(/&rsquo;/gi, '’')
+    .replace(/&lrm;/gi, '')
+    .replace(/&rlm;/gi, '')
+    .replace(/&apos;/gi, "'")
+    .replace(/&#39;/g, "'")
+    .replace(/&#x27;/gi, "'");
+
+  // Decode numeric entities (e.g. &#8217; or &#x2019;).
+  v = v.replace(/&#(x?[0-9a-fA-F]+);/g, (m, rawNum) => {
+    try {
+      const isHex = String(rawNum).toLowerCase().startsWith('x');
+      const n = Number.parseInt(isHex ? String(rawNum).slice(1) : String(rawNum), isHex ? 16 : 10);
+      if (!Number.isFinite(n) || n < 0 || n > 0x10ffff) return m;
+      return String.fromCodePoint(n);
+    } catch {
+      return m;
+    }
+  });
+
+  return v.replace(/\s+/g, ' ').trim();
+}
+
 export function parseVimeoTranscript(body) {
   const raw = String(body || '');
   if (!raw.trim()) return '';
@@ -222,7 +264,7 @@ export function parseVimeoTranscript(body) {
 
     const parsed = items
       .map((it, idx) => {
-        if (typeof it === 'string') return { idx, start: null, text: it.trim() };
+        if (typeof it === 'string') return { idx, start: null, text: cleanCaptionText(it) };
 
         const rawText =
           it?.text ||
@@ -251,7 +293,7 @@ export function parseVimeoTranscript(body) {
         return {
           idx,
           start: Number.isFinite(start) ? start : null,
-          text: String(rawText).trim(),
+          text: cleanCaptionText(rawText),
         };
       })
       .filter((x) => Boolean(x.text));
