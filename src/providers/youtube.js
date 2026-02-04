@@ -1,7 +1,24 @@
 import ytdl from 'ytdl-core';
 
+function cleanUrlInput(url) {
+  let s = String(url || '').trim();
+  if (!s) return '';
+
+  // Provider parity: HTML copy/paste often escapes query separators.
+  // Example: https://youtube.com/watch?v=...&amp;t=30
+  s = s.replace(/&amp;/gi, '&').replace(/&#0*38;/gi, '&');
+
+  // Provider parity: accept angle-wrapped links (common in markdown/chat), including Slack-style <url|label>.
+  const slack = s.match(/^<\s*([^|>\s]+)\s*\|[^>]*>$/i);
+  if (slack) return String(slack[1] || '').trim();
+  const angle = s.match(/^<\s*([^>\s]+)\s*>$/i);
+  if (angle) return String(angle[1] || '').trim();
+
+  return s;
+}
+
 export function extractYoutubeId(url) {
-  const s = String(url || '').trim();
+  const s = cleanUrlInput(url);
   if (!s) return null;
 
   // Ensure we can parse even if the user omitted scheme.
@@ -98,7 +115,7 @@ export function extractYoutubeId(url) {
 }
 
 export function isYoutubeDomain(url) {
-  const s = String(url || '').trim();
+  const s = cleanUrlInput(url);
   if (!s) return false;
 
   const withScheme = /^(?:https?:)?\/\//i.test(s)
@@ -119,7 +136,7 @@ export function isYoutubeDomain(url) {
 // Normalize common YouTube share URLs to a canonical /watch?v=... form.
 // Keeps query params (t/start/si/etc) so downstream logic can preserve timestamps.
 export function normalizeYoutubeUrl(url) {
-  const s = String(url || '').trim();
+  const s = cleanUrlInput(url);
   if (!s) return '';
 
   const withScheme = /^(?:https?:)?\/\//i.test(s)
@@ -306,7 +323,7 @@ export function normalizeYoutubeUrl(url) {
 }
 
 export function youtubeNonVideoReason(url) {
-  const s = String(url || '').trim();
+  const s = cleanUrlInput(url);
   if (!s) return '';
 
   const withScheme = /^(?:https?:)?\/\//i.test(s)
@@ -366,7 +383,7 @@ export function youtubeNonVideoReason(url) {
 }
 
 export function isYoutubeClipUrl(url) {
-  const s = String(url || '').trim();
+  const s = cleanUrlInput(url);
   if (!s) return false;
 
   // Ensure we can parse even if the user omitted scheme.
