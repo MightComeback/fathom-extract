@@ -62,6 +62,15 @@ export function parseSimpleVtt(text) {
       .replace(/&lt;/gi, '<')
       .replace(/&gt;/gi, '>')
       .replace(/&quot;/gi, '"')
+      // Common punctuation entities show up in YouTube/Vimeo/Loom captions.
+      // Keep this list small + deterministic for tests.
+      .replace(/&mdash;/gi, '—')
+      .replace(/&ndash;/gi, '–')
+      .replace(/&hellip;/gi, '…')
+      .replace(/&ldquo;/gi, '“')
+      .replace(/&rdquo;/gi, '”')
+      .replace(/&lsquo;/gi, '‘')
+      .replace(/&rsquo;/gi, '’')
       // Directional/invisible marks sometimes appear in provider captions.
       // Strip them so downstream text heuristics don't get confused.
       .replace(/&lrm;/gi, '')
@@ -70,6 +79,18 @@ export function parseSimpleVtt(text) {
       .replace(/&apos;/gi, "'")
       .replace(/&#39;/g, "'")
       .replace(/&#x27;/gi, "'");
+
+    // Decode numeric HTML entities (e.g. &#8217; or &#x2019;) that are common in captions.
+    cleaned = cleaned.replace(/&#(x?[0-9a-fA-F]+);/g, (_m, raw) => {
+      try {
+        const isHex = String(raw).toLowerCase().startsWith('x');
+        const n = Number.parseInt(isHex ? String(raw).slice(1) : String(raw), isHex ? 16 : 10);
+        if (!Number.isFinite(n) || n < 0 || n > 0x10ffff) return _m;
+        return String.fromCodePoint(n);
+      } catch {
+        return _m;
+      }
+    });
 
     cleaned = cleaned.replace(/\s+/g, ' ').trim();
     if (cleaned) out.push(cleaned);

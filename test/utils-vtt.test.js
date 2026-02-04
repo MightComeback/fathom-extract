@@ -93,6 +93,23 @@ Good&rlm;bye
   assert.equal(text, 'Hello world Goodbye');
 });
 
+test('parseSimpleVtt decodes common punctuation entities (provider captions)', (t) => {
+  const vtt = `WEBVTT
+
+00:00:01.000 --> 00:00:04.000
+Wait&hellip; that&rsquo;s weird
+
+00:00:04.000 --> 00:00:08.000
+Dash: &mdash; and &ndash; plus &ldquo;quotes&rdquo;
+
+00:00:08.000 --> 00:00:12.000
+Numeric: &#8217; and hex: &#x2019;
+`;
+
+  const text = parseSimpleVtt(vtt);
+  assert.equal(text, 'Wait… that’s weird Dash: — and – plus “quotes” Numeric: ’ and hex: ’');
+});
+
 test('parseSimpleVtt returns empty string for empty input', (t) => {
   assert.equal(parseSimpleVtt(''), '');
   assert.equal(parseSimpleVtt(null), '');
