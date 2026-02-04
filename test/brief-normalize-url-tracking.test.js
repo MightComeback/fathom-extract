@@ -57,4 +57,13 @@ describe("normalizeUrlLike - tracking params", () => {
       "https://youtube.com/watch?v=dQw4w9WgXcQ&t=1m2s",
     );
   });
+
+  test("strips tracking params for YouTube shorts URLs (feature/si/utm_*)", () => {
+    assert.equal(
+      normalizeUrlLike(
+        "https://youtube.com/shorts/dQw4w9WgXcQ?feature=share&si=deadbeef&utm_source=x#t=30s",
+      ),
+      "https://youtube.com/watch?v=dQw4w9WgXcQ&t=30s",
+    );
+  });
 });
