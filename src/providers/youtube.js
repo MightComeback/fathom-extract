@@ -149,7 +149,7 @@ export function normalizeYoutubeUrl(url) {
   // youtu.be/<id>
   if (host === 'youtu.be') {
     const id = u.pathname.split('/').filter(Boolean)[0];
-    if (id) {
+    if (/^[a-zA-Z0-9_-]{11}$/.test(id || '')) {
       const out = new URL('https://www.youtube.com/watch');
       out.searchParams.set('v', id);
       for (const [k, v] of u.searchParams.entries()) out.searchParams.set(k, v);
@@ -162,7 +162,7 @@ export function normalizeYoutubeUrl(url) {
 
   // /@Channel/shorts/<id> (common when sharing from a channel profile)
   const handleShorts = u.pathname.match(/^\/@[^/]+\/shorts\/([^/?#]+)/);
-  if (handleShorts?.[1]) {
+  if (/^[a-zA-Z0-9_-]{11}$/.test(handleShorts?.[1] || '')) {
     const out = new URL('https://www.youtube.com/watch');
     out.searchParams.set('v', handleShorts[1]);
     for (const [k, v] of u.searchParams.entries()) out.searchParams.set(k, v);
@@ -174,7 +174,7 @@ export function normalizeYoutubeUrl(url) {
 
   // /shorts/<id>
   const shorts = u.pathname.match(/^\/shorts\/([^/?#]+)/);
-  if (shorts?.[1]) {
+  if (/^[a-zA-Z0-9_-]{11}$/.test(shorts?.[1] || '')) {
     const out = new URL('https://www.youtube.com/watch');
     out.searchParams.set('v', shorts[1]);
     for (const [k, v] of u.searchParams.entries()) out.searchParams.set(k, v);
@@ -186,7 +186,7 @@ export function normalizeYoutubeUrl(url) {
 
   // /@Channel/live/<id>
   const handleLive = u.pathname.match(/^\/@[^/]+\/live\/([^/?#]+)/);
-  if (handleLive?.[1]) {
+  if (/^[a-zA-Z0-9_-]{11}$/.test(handleLive?.[1] || '')) {
     const out = new URL('https://www.youtube.com/watch');
     out.searchParams.set('v', handleLive[1]);
     for (const [k, v] of u.searchParams.entries()) out.searchParams.set(k, v);
@@ -198,7 +198,7 @@ export function normalizeYoutubeUrl(url) {
 
   // /live/<id>
   const live = u.pathname.match(/^\/live\/([^/?#]+)/);
-  if (live?.[1]) {
+  if (/^[a-zA-Z0-9_-]{11}$/.test(live?.[1] || '')) {
     const out = new URL('https://www.youtube.com/watch');
     out.searchParams.set('v', live[1]);
     for (const [k, v] of u.searchParams.entries()) out.searchParams.set(k, v);
@@ -210,7 +210,7 @@ export function normalizeYoutubeUrl(url) {
 
   // /embed/<id>
   const embed = u.pathname.match(/^\/embed\/([^/?#]+)/);
-  if (embed?.[1]) {
+  if (/^[a-zA-Z0-9_-]{11}$/.test(embed?.[1] || '')) {
     const out = new URL('https://www.youtube.com/watch');
     out.searchParams.set('v', embed[1]);
     for (const [k, v] of u.searchParams.entries()) out.searchParams.set(k, v);

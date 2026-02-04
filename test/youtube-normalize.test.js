@@ -80,3 +80,17 @@ test('normalizeYoutubeUrl canonicalizes subdomain watch URLs to www.youtube.com'
     'https://www.youtube.com/watch?v=dQw4w9WgXcQ&t=43',
   );
 });
+
+test('normalizeYoutubeUrl does not normalize non-video youtu.be paths', () => {
+  assert.strictEqual(
+    normalizeYoutubeUrl('https://youtu.be/channel/UC38IQsAvIsxxjztdMZQtwHA'),
+    'https://youtu.be/channel/UC38IQsAvIsxxjztdMZQtwHA',
+  );
+});
+
+test('normalizeYoutubeUrl does not normalize shorts URLs without a valid 11-char video id', () => {
+  assert.strictEqual(
+    normalizeYoutubeUrl('https://www.youtube.com/shorts/not-a-video-id'),
+    'https://www.youtube.com/shorts/not-a-video-id',
+  );
+});
