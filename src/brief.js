@@ -223,6 +223,16 @@ export function normalizeUrlLike(s) {
       // We only normalize when the path looks like a real video URL.
       const segsAll = path.split('/').filter(Boolean);
       const first = String(segsAll[0] || '').toLowerCase();
+
+      // Provider parity: Vimeo "review" links are real videos but often require the review token.
+      // Example: https://vimeo.com/<id>/review/<token>/<hash>
+      // Do not canonicalize these to https://vimeo.com/<id> (that would drop the token and break access).
+      if (/\/review\//i.test(path)) {
+        // Normalize host, keep the path + remaining params (tracking params were already stripped above).
+        url.hostname = 'vimeo.com';
+        return url.toString();
+      }
+
       const blockedTopLevel = new Set([
         'blog',
         'help',

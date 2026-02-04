@@ -29,4 +29,13 @@ describe('normalizeUrlLike - provider parity', () => {
       'https://loom.com/share/abcdEFGHijk?sid=deadbeef&t=30s'
     );
   });
+
+  test('does not canonicalize Vimeo review URLs (must preserve token)', () => {
+    assert.equal(
+      normalizeUrlLike(
+        'https://vimeo.com/123456789/review/abcdef123456/abcdef1234?utm_source=x#t=10s'
+      ),
+      'https://vimeo.com/123456789/review/abcdef123456/abcdef1234#t=10s'
+    );
+  });
 });

@@ -85,6 +85,18 @@ export function extractVimeoId(url) {
     if (looksHashy) return segs[0];
   }
 
+  // Provider parity: Vimeo review links are still clip URLs.
+  // Example: https://vimeo.com/<id>/review/<token>/<hash>
+  if (segs.length >= 3 && isId(segs[0]) && String(segs[1] || '').toLowerCase() === 'review' && !isBlocked) {
+    return String(segs[0]);
+  }
+
+  // More general: if the path contains /review/ and the segment before it is a numeric id, treat it as the clip id.
+  const reviewIdx = segs.findIndex((x) => String(x || '').toLowerCase() === 'review');
+  if (reviewIdx > 0 && isId(segs[reviewIdx - 1]) && !isBlocked) {
+    return String(segs[reviewIdx - 1]);
+  }
+
   const isVideoKeyword = (x) => {
     const v = String(x || '').toLowerCase();
     return v === 'video' || v === 'videos';

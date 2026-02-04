@@ -32,6 +32,8 @@ test('extractVimeoId extracts numeric ID', () => {
   assert.equal(extractVimeoId('https://player.vimeo.com/video/555666777'), '555666777');
   assert.equal(extractVimeoId('https://player.vimeo.com/video/12345'), '12345');
   assert.equal(extractVimeoId('https://vimeo.com/123456789/abcdef1234'), '123456789');
+  // Provider parity: review URLs are still valid clip URLs (and often require the token).
+  assert.equal(extractVimeoId('https://vimeo.com/123456789/review/abcdef123456/abcdef1234'), '123456789');
 
   assert.equal(extractVimeoId('https://vimeo.com/blog/post/2026/02/03/some-article'), null);
   assert.equal(extractVimeoId('https://vimeo.com/event/123456'), null);
