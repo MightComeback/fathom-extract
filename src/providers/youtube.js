@@ -28,6 +28,26 @@ export function extractYoutubeId(url) {
   // Accept youtube.com subdomains (m., music., etc) and youtube-nocookie.com embeds.
   if (!/(^|\.)youtube\.com$/i.test(host) && !/(^|\.)youtube-nocookie\.com$/i.test(host)) return null;
 
+  // /redirect?q=<encoded-url> (common when copying external links from YouTube descriptions)
+  // Example:
+  //   https://www.youtube.com/redirect?q=https%3A%2F%2Fyoutu.be%2F<id>%3Ft%3D43
+  if (u.pathname.toLowerCase() === '/redirect') {
+    const encoded = u.searchParams.get('q') || u.searchParams.get('url');
+    if (encoded) {
+      try {
+        let decoded = encoded;
+        for (let i = 0; i < 2; i++) {
+          if (!/%[0-9a-fA-F]{2}/.test(decoded)) break;
+          decoded = decodeURIComponent(decoded);
+        }
+        const id = extractYoutubeId(decoded);
+        if (id) return id;
+      } catch {
+        // ignore
+      }
+    }
+  }
+
   // /attribution_link?...&u=/watch%3Fv%3D<id>%26...
   // These are common when sharing from mobile apps.
   if (u.pathname.toLowerCase() === '/attribution_link') {
@@ -124,6 +144,25 @@ export function normalizeYoutubeUrl(url) {
   })();
 
   const host = u.hostname.replace(/^www\./i, '').toLowerCase();
+
+  // /redirect?q=<encoded-url> (common when copying external links from YouTube descriptions)
+  if (u.pathname.toLowerCase() === '/redirect') {
+    const encoded = u.searchParams.get('q') || u.searchParams.get('url');
+    if (encoded) {
+      try {
+        let decoded = encoded;
+        for (let i = 0; i < 2; i++) {
+          if (!/%[0-9a-fA-F]{2}/.test(decoded)) break;
+          decoded = decodeURIComponent(decoded);
+        }
+        const out = normalizeYoutubeUrl(decoded);
+        if (out) return out;
+      } catch {
+        // ignore
+      }
+    }
+    // If we can't decode it, fall through to canonicalization of the current URL.
+  }
 
   // /attribution_link?...&u=/watch%3Fv%3D<id>%26...
   // Common when sharing from mobile apps.

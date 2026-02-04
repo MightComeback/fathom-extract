@@ -127,6 +127,26 @@ export function normalizeUrlLike(s) {
       url.searchParams.delete('start_radio');
       url.searchParams.delete('rv');
 
+      // /redirect?q=<encoded-url> (common when copying external links from YouTube descriptions).
+      // Example:
+      //   https://www.youtube.com/redirect?q=https%3A%2F%2Fyoutu.be%2F<id>%3Ft%3D43
+      if (path.toLowerCase() === '/redirect') {
+        const encoded = url.searchParams.get('q') || url.searchParams.get('url') || '';
+        if (encoded) {
+          try {
+            let decoded = encoded;
+            for (let i = 0; i < 2; i++) {
+              if (!/%[0-9a-fA-F]{2}/.test(decoded)) break;
+              decoded = decodeURIComponent(decoded);
+            }
+            return canonicalizeKnownProviderUrl(decoded);
+          } catch {
+            // ignore
+          }
+        }
+        return raw;
+      }
+
       // Mobile shares often use /attribution_link with an encoded inner path.
       // Example:
       //   https://www.youtube.com/attribution_link?u=%2Fwatch%3Fv%3Dabc123%26t%3D30s%26feature%3Dshare

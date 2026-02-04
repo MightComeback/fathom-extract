@@ -48,6 +48,13 @@ describe("provider URL normalization", () => {
     assert.equal(u, "https://youtube.com/watch?v=dQw4w9WgXcQ&t=43s");
   });
 
+  test("normalizes YouTube redirect links (external link wrappers)", () => {
+    const u = normalizeUrlLike(
+      "https://www.youtube.com/redirect?q=https%3A%2F%2Fyoutu.be%2FdQw4w9WgXcQ%3Ft%3D43&redir_token=IGNORED"
+    );
+    assert.equal(u, "https://youtube.com/watch?v=dQw4w9WgXcQ&t=43");
+  });
+
   test("normalizes YouTube shorts URLs (including handle-based paths)", () => {
     const u1 = normalizeUrlLike("https://youtube.com/shorts/dQw4w9WgXcQ?feature=share");
     assert.equal(u1, "https://youtube.com/watch?v=dQw4w9WgXcQ");
