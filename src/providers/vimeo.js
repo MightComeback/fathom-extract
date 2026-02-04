@@ -478,8 +478,11 @@ function normalizeVimeoAssetUrl(url, base = 'https://vimeo.com') {
 }
 
 function ensureVimeoVtt(url) {
-  const raw = String(url || '').trim();
+  let raw = String(url || '').trim();
   if (!raw) return '';
+
+  // Normalize protocol-relative inputs so URL parsing works.
+  if (raw.startsWith('//')) raw = `https:${raw}`;
 
   // If it's already a direct VTT asset or explicitly requests VTT, keep as-is.
   if (/\.vtt(?:\?|#|$)/i.test(raw)) return raw;
