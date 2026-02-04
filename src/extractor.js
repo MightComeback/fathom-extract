@@ -364,17 +364,58 @@ async function fetchText(url, { headers } = {}) {
 
 function unescapeJsonSlashes(s) {
   return String(s || '')
-    .replace(/\\u002F/gi, '/')
+    // Decode common JSON unicode escapes (\uXXXX). We keep this best-effort and only
+    // handle the 4-hex-digit form, which is what shows up in provider blobs.
+    .replace(/\\u([0-9a-fA-F]{4})/g, (m, hex) => {
+      try {
+        const n = Number.parseInt(String(hex), 16);
+        if (!Number.isFinite(n)) return m;
+        return String.fromCharCode(n);
+      } catch {
+        return m;
+      }
+    })
+    // Historical: some providers escape slashes.
     .replace(/\\\//g, '/');
 }
 
-function extractAnyJsonUrls(html, keys = []) {
+export function extractAnyJsonUrls(html, keys = []) {
   const h = String(html || '');
+
+  const decodeJsonStringLiteral = (literal) => {
+    const raw = String(literal || '').trim();
+    if (!raw) return '';
+
+    // Accept both "..." and '...'
+    const q = raw[0];
+    if ((q === '"' || q === "'") && raw.endsWith(q)) {
+      const inner = raw.slice(1, -1);
+      // Best-effort: interpret common JSON escape sequences.
+      try {
+        // Re-stringify to safely feed into JSON.parse.
+        const safe = `"${inner.replace(/\\/g, '\\\\').replace(/"/g, '\\"')}"`;
+        return JSON.parse(safe);
+      } catch {
+        return inner;
+      }
+    }
+
+    // Not a quoted literal; return as-is.
+    return raw;
+  };
+
   for (const k of keys) {
-    // Allow both JSON-ish: "downloadUrl":"..." and JS-ish: downloadUrl: "..."
-    const re = new RegExp(`(?:["']?${k}["']?)\\s*[:=]\\s*\"([^\"\\s]+)\"`, 'i');
+    // Allow both JSON-ish: "downloadUrl":"..." and JS-ish: downloadUrl: "..." (or single quotes).
+    // Capture a full quoted string literal so we can decode escaped sequences inside it.
+    const re = new RegExp(
+      `(?:["']?${k}["']?)\\s*[:=]\\s*(\\"(?:\\\\.|[^\\\"])*\\"|'(?:\\\\.|[^'])*')`,
+      'i'
+    );
     const m = h.match(re);
-    if (m) return unescapeJsonSlashes(m[1]);
+    if (m) {
+      const decoded = decodeJsonStringLiteral(m[1]);
+      return unescapeJsonSlashes(decoded);
+    }
   }
   return '';
 }
