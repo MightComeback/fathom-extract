@@ -19,6 +19,16 @@ describe("provider URL normalization", () => {
     assert.match(u, /^https:\/\//);
   });
 
+  test("normalizes unlisted Vimeo URLs to preserve the hash (h)", () => {
+    const u = normalizeUrlLike("https://vimeo.com/76979871/abcdef1234");
+    assert.equal(u, "https://vimeo.com/76979871?h=abcdef1234");
+  });
+
+  test("normalizes unlisted Vimeo URLs on channels paths to preserve the hash (h)", () => {
+    const u = normalizeUrlLike("https://vimeo.com/channels/staffpicks/76979871/abcdef1234");
+    assert.equal(u, "https://vimeo.com/76979871?h=abcdef1234");
+  });
+
   test("accepts Loom share URLs", () => {
     const u = normalizeUrlLike("https://www.loom.com/share/0123456789abcdef0123456789abcdef");
     assert.ok(u);
