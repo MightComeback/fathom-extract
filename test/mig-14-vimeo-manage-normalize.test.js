@@ -1,4 +1,5 @@
-import { describe, expect, test } from 'bun:test';
+import { describe, test } from 'node:test';
+import assert from 'node:assert/strict';
 
 import { normalizeUrlLike } from '../src/brief.js';
 
@@ -7,12 +8,13 @@ import { normalizeUrlLike } from '../src/brief.js';
 
 describe('MIG-14: Vimeo manage URL normalization', () => {
   test('normalizeUrlLike canonicalizes vimeo.com/manage/videos/<id> to https://vimeo.com/<id>', () => {
-    expect(normalizeUrlLike('https://vimeo.com/manage/videos/123456789?share=copy')).toBe(
+    assert.equal(
+      normalizeUrlLike('https://vimeo.com/manage/videos/123456789?share=copy'),
       'https://vimeo.com/123456789',
     );
   });
 
   test('normalizeUrlLike canonicalizes vimeo.com/manage/video/<id> to https://vimeo.com/<id>', () => {
-    expect(normalizeUrlLike('https://vimeo.com/manage/video/123456789')).toBe('https://vimeo.com/123456789');
+    assert.equal(normalizeUrlLike('https://vimeo.com/manage/video/123456789'), 'https://vimeo.com/123456789');
   });
 });
