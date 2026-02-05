@@ -8,7 +8,7 @@ import { parseSimpleVtt } from './utils.js';
 import { ProgressBar, parseFfmpegProgress } from './progress.js';
 import { extractFathomTranscriptUrl, extractFathomMetadataFromHtml, normalizeFathomUrl, isFathomUrl, isFathomDomain, fathomNonVideoReason } from './providers/fathom.js';
 import { isYoutubeUrl, isYoutubeClipUrl, isYoutubeDomain, normalizeYoutubeUrl, youtubeNonVideoReason, extractYoutubeIdFromClipHtml, extractYoutubeMetadataFromHtml, fetchYoutubeOembed, fetchYoutubeMediaUrl, extractYoutubeTranscriptUrl } from './providers/youtube.js';
-import { isVimeoUrl, isVimeoDomain, normalizeVimeoUrl, vimeoNonVideoReason, extractVimeoMetadataFromHtml, fetchVimeoOembed, parseVimeoTranscript, extractVimeoTranscriptUrl, fetchVimeoMediaUrl } from './providers/vimeo.js';
+import { isVimeoUrl, isVimeoDomain, normalizeVimeoUrl, vimeoNonVideoReason, unsupportedVideoPlatformReason, extractVimeoMetadataFromHtml, fetchVimeoOembed, parseVimeoTranscript, extractVimeoTranscriptUrl, fetchVimeoMediaUrl } from './providers/vimeo.js';
 import { isLoomUrl, isLoomDomain, loomNonVideoReason, normalizeLoomUrl, extractLoomMetadataFromHtml, fetchLoomOembed, parseLoomTranscript, extractLoomTranscriptUrl, fetchLoomMediaUrl } from './providers/loom.js';
 
 function oneLine(s) {
@@ -924,6 +924,14 @@ export async function extractFromUrl(rawUrl, options = {}) {
       if (fathomReason) {
         throw new Error(fathomReason);
       }
+    }
+
+    // Helpful failure mode: unsupported video platforms provide generic guidance
+    // when the URL is from a known video platform but not actually a supported link.
+    // This improves user experience when users copy URLs from unsupported sources.
+    const unsupportedProviderReason = unsupportedVideoPlatformReason(url);
+    if (unsupportedProviderReason) {
+      throw new Error(unsupportedProviderReason);
     }
 
     // YouTube clip URLs (youtube.com/clip/...) don't include a stable 11-char video id.

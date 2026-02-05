@@ -458,6 +458,109 @@ export function vimeoNonVideoReason(url) {
   return '';
 }
 
+// Helper: check if a video platform domain is generally known to support video URLs,
+// but this specific video-extract tool does not support it yet.
+// Returns a helpful error message if the URL is from an unsupported platform.
+function unsupportedVideoPlatformReason(url) {
+  const s = withScheme(url);
+  if (!s) return '';
+
+  let u;
+  try {
+    u = new URL(s);
+  } catch {
+    return '';
+  }
+
+  const host = u.hostname.replace(/^www\./i, '').toLowerCase();
+
+  // These platforms are known to host video content but are not supported by video-extract:
+  // - Microsoft Teams
+  // - Zoom
+  // - Discord
+  // - Slack
+  // - Google Meet
+  // - Microsoft Teams Meeting
+  // - Fresha / Fresha bookings
+  const unsupportedProviders = [
+    // Microsoft Teams / Skype / Office 365
+    'teams.microsoft.com',
+    'teams.skype.com',
+    'office.com',
+    'outlook.office.com',
+
+    // Zoom
+    'zoom.us',
+    'zoomgov.com',
+    'zoom.zoom.us',
+
+    // Discord
+    'discord.com',
+    'discord.gg',
+    'discordapp.com',
+
+    // Slack / Teams huddles
+    'slack.com',
+    'huddle.slack.com',
+
+    // Google Meet
+    'meet.google.com',
+
+    // Calendar/booking systems that show video embeds but aren't direct video URLs
+    'calendar.google.com',
+    'booking.syndio.com',
+    'meetings.mightworks.com',
+    'ngrok.io',
+  ];
+
+  // Only provide helpful guidance if we recognize the platform but don't support it.
+  for (const unsupportedHost of unsupportedProviders) {
+    if (host === unsupportedHost || host === `subdomain.${unsupportedHost}` || host.endsWith(`.${unsupportedHost}`)) {
+      return `This video is hosted on an unsupported platform (${host}). ${getUnsupportedPlatformHelp(host)}`;
+    }
+  }
+
+  return '';
+}
+
+// Helper: platform-specific guidance for unsupported video platforms.
+function getUnsupportedPlatformHelp(host) {
+  const helpTexts = {
+    'teams.microsoft.com':
+      'For Microsoft Teams meetings, try copying the full URL from the Teams meeting share dialog, or use the Teams export feature if available.',
+    'teams.skype.com':
+      'For Skype meetings, try copying the full URL from the Skype share dialog, or use the export feature if available.',
+    'office.com':
+      'For Office Online meetings, try copying the direct video URL from the meeting page if available, or use the export feature if available.',
+    'outlook.office.com':
+      'For Outlook meetings, try copying the direct video URL from the meeting page, or use the export feature if available.',
+    'zoom.us':
+      'For Zoom meetings, try to copy the full meeting URL from the Zoom share dialog, or use the Zoom export feature if available.',
+    'zoomgov.com':
+      'For Zoom Government meetings, try to copy the full meeting URL from the Zoom share dialog, or use the export feature if available.',
+    'zoom.zoom.us':
+      'For Zoom meetings, try to copy the full meeting URL from the Zoom share dialog, or use the export feature if available.',
+    'discord.com':
+      'For Discord video calls, try to copy the full video URL from the Discord share dialog, or use the export feature if available.',
+    'discord.gg':
+      'For Discord video calls, try to copy the full video URL from the Discord share dialog, or use the export feature if available.',
+    'discordapp.com':
+      'For Discord video calls, try to copy the full video URL from the Discord share dialog, or use the export feature if available.',
+    'slack.com':
+      'For Slack video calls or huddles, try to copy the full video URL from the Slack share dialog, or use the export feature if available.',
+    'huddle.slack.com':
+      'For Slack huddles, try to copy the full video URL from the Slack share dialog, or use the export feature if available.',
+    'meet.google.com':
+      'For Google Meet calls, try to copy the full video URL from the Google Meet share dialog, or use the export feature if available.',
+    'calendar.google.com':
+      'For Google Calendar meetings, try copying the direct video URL from the meeting page if available, or use the export feature if available.',
+    'ngrok.io':
+      'For local development videos shared via ngrok, try to copy the full video URL from the ngrok session page, or use the export feature if available.',
+  };
+
+  return helpTexts[host] || 'video-extract currently supports Fathom, Loom, YouTube, and Vimeo links. Try converting the video to one of these platforms or using the platform\'s export feature.';
+}
+
 function cleanCaptionText(s) {
   let v = String(s || '');
   if (!v) return '';
@@ -885,3 +988,6 @@ export async function fetchVimeoMediaUrl(url) {
     return null;
   }
 }
+
+export { unsupportedVideoPlatformReason };
+
