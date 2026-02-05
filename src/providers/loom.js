@@ -501,6 +501,10 @@ function formatTime(seconds) {
 function cleanLoomCaptionText(text) {
   let v = String(text || '');
 
+  // Provider parity: strip lightweight HTML markup before entity decoding.
+  // This matches what we do for WebVTT to improve transcript quality.
+  v = v.replace(/<[^>]+>/g, '');
+
   // Decode common HTML entities used in Loom captions.
   v = v
     .replace(/&nbsp;/gi, ' ')
