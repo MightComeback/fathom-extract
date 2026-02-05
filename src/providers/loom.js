@@ -141,6 +141,37 @@ export function normalizeLoomUrl(url) {
   return out.toString();
 }
 
+// Helper: check if the extracted ID looks like a valid Loom video ID
+export function isValidLoomId(id) {
+  if (!id || typeof id !== 'string') return false;
+  // Loom IDs are alphanumeric with underscores/hyphens, typically 8-20 characters
+  // Reject obviously non-IDs like "login", "pricing", "login"
+  if (!/^[a-zA-Z0-9_-]{6,20}$/.test(id)) return false;
+
+  // Reject common non-identifier words
+  const nonIdWords = new Set([
+    '',
+    'login',
+    'logout',
+    'signup',
+    'sign-up',
+    'pricing',
+    'enterprise',
+    'teams',
+    'features',
+    'integrations',
+    'security',
+    'careers',
+    'blog',
+    'help',
+    'support',
+    'settings',
+    'terms',
+    'privacy',
+  ]);
+  return !nonIdWords.has(id.toLowerCase());
+}
+
 export function isLoomDomain(url) {
   const s = withScheme(url);
   if (!s) return false;
@@ -156,14 +187,6 @@ export function isLoomDomain(url) {
 
 // Some Loom URLs are not direct video pages (pricing/login/etc).
 // Return a short actionable reason when we can detect this.
-// Helper: check if the extracted ID looks like a valid Loom video ID
-function isValidLoomId(id) {
-  if (!id || typeof id !== 'string') return false;
-  if (!/^[a-zA-Z0-9_-]+$/.test(id)) return false;
-  // Loom IDs are typically 10+ characters
-  return id.length >= 10;
-}
-
 export function loomNonVideoReason(url) {
   const s = withScheme(url);
   if (!s) return '';
@@ -672,7 +695,7 @@ export async function fetchLoomMediaUrl(url) {
     const meta = extractLoomMetadataFromHtml(html);
     return meta?.mediaUrl || null;
   } catch (err) {
-    // Re-throw with context for the caller to provide helpful errors
-    throw err;
+    // Return null on any error for cleaner error handling in the extractor
+    return null;
   }
 }

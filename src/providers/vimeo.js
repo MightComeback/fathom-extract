@@ -102,7 +102,7 @@ function withScheme(s) {
 }
 
 // Helper: check if the extracted ID looks like a valid Vimeo video ID
-function isValidVimeoId(id) {
+export function isValidVimeoId(id) {
   if (!id || typeof id !== 'string') return false;
   // Vimeo IDs are at least 3 digits (short codes can be 3+)
   const numId = String(id || '').trim();
@@ -862,7 +862,7 @@ export async function fetchVimeoMediaUrl(url) {
     const meta = extractVimeoMetadataFromHtml(html);
     return meta?.mediaUrl || null;
   } catch (err) {
-    // Re-throw with context for the caller to provide helpful errors
-    throw err;
+    // Return null on any error for cleaner error handling in the extractor
+    return null;
   }
 }

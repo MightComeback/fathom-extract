@@ -82,7 +82,7 @@ function cleanUrlInput(url) {
 }
 
 // Helper: check if the extracted ID looks like a valid YouTube video ID
-function isValidYoutubeId(id) {
+export function isValidYoutubeId(id) {
   if (!id || typeof id !== 'string') return false;
   if (!/^[a-zA-Z0-9_-]{11}$/.test(id)) return false;
   return true;
@@ -715,7 +715,7 @@ export async function fetchYoutubeMediaUrl(url) {
 
     // Check if video is available
     if (!info.videoDetails || !info.videoDetails.videoId) {
-      throw new Error('Could not retrieve YouTube video information. The video may be private, unavailable, or blocked.');
+      return null;
     }
 
     // Prefer a progressive MP4 where possible.
@@ -730,15 +730,12 @@ export async function fetchYoutubeMediaUrl(url) {
     });
 
     if (!format?.url) {
-      throw new Error('No suitable video format found. The video may be restricted or not available for download.');
+      return null;
     }
 
     return format.url;
   } catch (err) {
-    // Re-throw with context for the caller to provide helpful errors
-    if (err.message.includes('signing')) {
-      throw new Error('YouTube video requires signing. Use yt-dlp with a session cookie instead.');
-    }
-    throw err;
+    // Return null on any error for cleaner error handling in the extractor
+    return null;
   }
 }

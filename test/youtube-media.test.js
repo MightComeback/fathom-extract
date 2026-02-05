@@ -12,7 +12,7 @@ test('fetchYoutubeMediaUrl returns URL when format found', async () => {
 
   try {
     // Mock ytdl.getInfo and chooseFormat
-    const mockInfo = { formats: [] };
+    const mockInfo = { formats: [], videoDetails: { videoId: 'dQw4w9WgXcQ' } };
     const mockFormat = { url: 'https://video.url/file.mp4', container: 'mp4', hasVideo: true, hasAudio: true };
 
     ytdl.getInfo = async () => {

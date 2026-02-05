@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import { strict as assert } from 'node:assert';
-import { fetchLoomMediaUrl, extractLoomMetadataFromHtml } from '../src/providers/loom.js';
+import { fetchLoomMediaUrl, extractLoomMetadataFromHtml, isLoomUrl } from '../src/providers/loom.js';
 
 test('fetchLoomMediaUrl extracts media URL from Loom page HTML', async () => {
   const originalFetch = globalThis.fetch;
@@ -52,6 +52,12 @@ test('fetchLoomMediaUrl returns null on network error', async () => {
   } finally {
     globalThis.fetch = originalFetch;
   }
+});
+
+test('isLoomUrl allows IDs with underscores', () => {
+  // Loom allows underscores in IDs for private/shared videos
+  const result = isLoomUrl('https://loom.com/share/abc_def');
+  assert.equal(result, true);
 });
 
 test('fetchLoomMediaUrl returns null when no media URL found', async () => {

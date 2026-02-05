@@ -33,7 +33,7 @@ test('extractFromUrl uses ytdl-core as a fallback to resolve YouTube mediaUrl', 
     });
 
     // Mock ytdl calls so we never hit the network.
-    ytdl.getInfo = async () => ({ formats: [] });
+    ytdl.getInfo = async () => ({ formats: [], videoDetails: { videoId: 'dQw4w9WgXcQ' } });
     ytdl.chooseFormat = () => ({
       url: 'https://cdn.example.com/video.mp4',
       container: 'mp4',

@@ -63,5 +63,6 @@ test('extractLoomId tolerates backticks and quotes (chat copy/paste)', (t) => {
 });
 
 test('isLoomUrl allows IDs with underscores', (t) => {
-  assert.strictEqual(isLoomUrl('https://www.loom.com/share/_start_with_underscore'), true);
+  // IDs with underscores must be <= 20 characters
+  assert.strictEqual(isLoomUrl('https://www.loom.com/share/test_id_123'), true);
 });

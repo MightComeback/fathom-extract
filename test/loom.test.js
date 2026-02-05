@@ -27,12 +27,12 @@ test('isLoomDomain matches Loom domains', () => {
 });
 
 test('extractLoomId extracts IDs from various URL shapes', () => {
-  assert.equal(extractLoomId('https://loom.com/share/abc12345'), 'abc12345');
-  assert.equal(extractLoomId('https://loom.com/v/xyz98765'), 'xyz98765');
-  assert.equal(extractLoomId('https://loom.com/embed/abc123'), 'abc123');
-  assert.equal(extractLoomId('https://loom.com/recording/abc123'), 'abc123');
-  assert.equal(extractLoomId('https://loom.com/i/abc123'), 'abc123');
-  assert.equal(extractLoomId('https://loom.com/s/abc123'), 'abc123');
+  assert.equal(extractLoomId('https://loom.com/share/abc12345678'), 'abc12345678');
+  assert.equal(extractLoomId('https://loom.com/v/xyz987654321'), 'xyz987654321');
+  assert.equal(extractLoomId('https://loom.com/embed/abc123456'), 'abc123456');
+  assert.equal(extractLoomId('https://loom.com/recording/abc12345'), 'abc12345');
+  assert.equal(extractLoomId('https://loom.com/i/abc12345'), 'abc12345');
+  assert.equal(extractLoomId('https://loom.com/s/abc12345'), 'abc12345');
   // Bare ID pattern: https://loom.com/<id>
   assert.equal(extractLoomId('https://loom.com/1234567890abcdef'), '1234567890abcdef');
   assert.equal(extractLoomId('https://google.com'), null, 'Should not extract from non-Loom');
@@ -40,10 +40,10 @@ test('extractLoomId extracts IDs from various URL shapes', () => {
 
 test('normalizeLoomUrl canonicalizes various Loom URL shapes', () => {
   // Basic share URLs
-  assert.equal(normalizeLoomUrl('https://www.loom.com/share/abc123'), 'https://loom.com/share/abc123');
-  assert.equal(normalizeLoomUrl('https://loom.com/v/abc123'), 'https://loom.com/share/abc123');
-  assert.equal(normalizeLoomUrl('https://loom.com/embed/abc123'), 'https://loom.com/share/abc123');
-  assert.equal(normalizeLoomUrl('https://loom.com/recording/abc123'), 'https://loom.com/share/abc123');
+  assert.equal(normalizeLoomUrl('https://www.loom.com/share/abc12345678'), 'https://loom.com/share/abc12345678');
+  assert.equal(normalizeLoomUrl('https://loom.com/v/xyz987654321'), 'https://loom.com/share/xyz987654321');
+  assert.equal(normalizeLoomUrl('https://loom.com/embed/abc12345678'), 'https://loom.com/share/abc12345678');
+  assert.equal(normalizeLoomUrl('https://loom.com/recording/abc123456'), 'https://loom.com/share/abc123456');
 
   // Preserve session ID for private shares
   assert.equal(
