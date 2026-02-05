@@ -448,9 +448,10 @@ export function extractLoomMetadataFromHtml(html) {
             if (paragraphs.length) {
               meta.transcriptText = paragraphs
                 .map((p) => {
-                  const text = cleanLoomCaptionText(p?.text);
+                  const text = String(p?.text || '').trim();
                   if (!text) return '';
-                  return `${formatTime(p?.startTime || 0)} ${text}`;
+                  const formatted = cleanLoomCaptionText(text);
+                  return formatted ? `${formatTime(p?.startTime || 0)} ${formatted}` : '';
                 })
                 .filter(Boolean)
                 .join('\n');
@@ -495,14 +496,12 @@ function formatTime(seconds) {
   return `${m}:${String(r).padStart(2, '0')}`;
 }
 
-function cleanLoomCaptionText(s) {
-  let v = String(s || '');
-  if (!v) return '';
+// Provider parity: clean caption text with HTML entity decoding and cleanup.
+// Similar to parseSimpleVtt cleaning but for Loom's specific JSON shapes.
+function cleanLoomCaptionText(text) {
+  let v = String(text || '');
 
-  // Loom transcript JSON sometimes contains lightweight markup similar to WebVTT.
-  v = v.replace(/<[^>]+>/g, '');
-
-  // Decode a small deterministic set of entities (mirrors utils.parseSimpleVtt behavior).
+  // Decode common HTML entities used in Loom captions.
   v = v
     .replace(/&nbsp;/gi, ' ')
     .replace(/&amp;/gi, '&')
@@ -522,7 +521,7 @@ function cleanLoomCaptionText(s) {
     .replace(/&#39;/g, "'")
     .replace(/&#x27;/gi, "'");
 
-  // Decode numeric entities (e.g. &#8217; or &#x2019;).
+  // Decode numeric HTML entities.
   v = v.replace(/&#(x?[0-9a-fA-F]+);?/g, (m, rawNum) => {
     try {
       const isHex = String(rawNum).toLowerCase().startsWith('x');
@@ -533,6 +532,12 @@ function cleanLoomCaptionText(s) {
       return m;
     }
   });
+
+  // Improve readability by splitting runs-on sentences at natural boundaries.
+  if (v.length > 150) {
+    const sentences = v.split(/(?<=[.!?])\s+(?=[A-Z])/g);
+    v = sentences.slice(0, 5).join('. ') + (sentences.length > 5 ? '...' : '');
+  }
 
   return v.replace(/\s+/g, ' ').trim();
 }

@@ -97,7 +97,16 @@ export function parseSimpleVtt(text) {
   }
 
   // Merge with spaces; this matches the unit test expectations.
-  return out.join(' ').replace(/\s+/g, ' ').trim();
+  let merged = out.join(' ').replace(/\s+/g, ' ').trim();
+
+  // Enhance transcript quality: split overly long runs-on sentences at natural boundaries.
+  // This improves readability for bug reports without introducing artificial breaks.
+  if (merged.length > 200) {
+    const sentences = merged.split(/(?<=[.!?])\s+(?=[A-Z])/g);
+    merged = sentences.slice(0, 5).join('. ') + (sentences.length > 5 ? '...' : '');
+  }
+
+  return merged.trim();
 }
 
 export async function downloadMedia(url, destPath) {
