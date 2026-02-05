@@ -200,3 +200,84 @@ test('extractVimeoMetadataFromHtml prefers non-auto English VTT text tracks', ()
 test('extractVimeoMetadataFromHtml returns null if config missing', () => {
   assert.strictEqual(extractVimeoMetadataFromHtml('<html></html>'), null);
 });
+
+test('extractVimeoMetadataFromHtml extracts date from LD+JSON (provider parity with Fathom)', () => {
+  const mockConfig = {
+    clip: {
+      name: 'Vimeo with Date',
+      duration: { raw: 120 },
+      poster: { display_src: 'https://cdn.vimeo.com/poster.jpg' },
+    },
+    owner: {
+      display_name: 'Vimeo User',
+    },
+    request: {
+      files: {
+        progressive: [
+          { url: 'https://cdn.vimeo.com/video.mp4', width: 1920 },
+        ]
+      },
+      text_tracks: [
+        { url: 'https://cdn.vimeo.com/subs.vtt', lang: 'en' }
+      ]
+    }
+  };
+
+  const ldData = {
+    '@type': 'VideoObject',
+    uploadDate: '2024-02-15',
+    datePublished: '2024-02-15',
+  };
+
+  const html = `
+    <html>
+      <script>
+        window.vimeo = window.vimeo || {};
+        window.vimeo.clip_page_config = ${JSON.stringify(mockConfig)};
+      </script>
+      <script type="application/ld+json">
+        ${JSON.stringify(ldData)}
+      </script>
+    </html>
+  `;
+
+  const result = extractVimeoMetadataFromHtml(html);
+  assert.ok(result);
+  assert.strictEqual(result.date, '2024-02-15');
+});
+
+test('extractVimeoMetadataFromHtml prefers og:description over clip.description', () => {
+  const mockConfig = {
+    clip: {
+      name: 'Vimeo',
+      duration: { raw: 120 },
+      poster: { display_src: 'https://cdn.vimeo.com/poster.jpg' },
+      description: 'Config description',
+    },
+    owner: {
+      display_name: 'Vimeo User',
+    },
+    request: {
+      files: {
+        progressive: [
+          { url: 'https://cdn.vimeo.com/video.mp4', width: 1920 },
+        ]
+      },
+    },
+  };
+
+  const html = `
+    <html>
+      <head>
+        <meta property="og:description" content="OG description">
+      </head>
+      <script>
+        window.vimeo = window.vimeo || {};
+        window.vimeo.clip_page_config = ${JSON.stringify(mockConfig)};
+      </script>
+    </html>
+  `;
+
+  const result = extractVimeoMetadataFromHtml(html);
+  assert.strictEqual(result.description, 'OG description');
+});

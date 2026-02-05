@@ -810,6 +810,24 @@ export function extractVimeoMetadataFromHtml(html) {
 
   const description = ogDesc || cfgDesc || '';
 
+  // Extract date from JSON-LD structured data (provider parity with Fathom)
+  let ldData = null;
+  const ldMatch = h.match(/<script\s+type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/i);
+  if (ldMatch) {
+    try {
+      ldData = safeJsonParse(ldMatch[1]);
+    } catch {
+      // ignore parsing errors
+    }
+  }
+
+  let date = undefined;
+  if (ldData?.uploadDate) {
+    date = ldData.uploadDate;
+  } else if (ldData?.datePublished) {
+    date = ldData.datePublished;
+  }
+
   return {
     title: title || undefined,
     description: description || undefined,
@@ -818,6 +836,7 @@ export function extractVimeoMetadataFromHtml(html) {
     author,
     mediaUrl,
     transcriptUrl,
+    date,
   };
 }
 
