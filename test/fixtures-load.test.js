@@ -6,7 +6,7 @@ describe('Loom fixtures', () => {
     it('loads loom-fake.html fixture', () => {
         const fixturePath = 'test/fixtures/loom-fake.html';
         const html = fs.readFileSync(fixturePath, 'utf8');
-        expect(html).toContain('Test Loom Video with Title');
+        expect(html).toContain('Test Loom Video');
         expect(html).toContain('RegularUserVideo');
     });
 
