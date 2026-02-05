@@ -150,6 +150,93 @@ export function normalizeFetchedContent(html, sourceUrl) {
   };
 }
 
+// Enhanced media URL validation with actionable error messages for provider parity.
+// Probes content type, rejects non-video URLs, and provides helpful guidance for private/unlisted content.
+export async function validateMediaUrl(mediaUrl, { headers, url, provider = 'generic' } = {}) {
+  if (!mediaUrl || typeof mediaUrl !== 'string') return { valid: false, reason: 'Empty or invalid media URL' };
+
+  const m = String(mediaUrl).trim();
+  if (!m) return { valid: false, reason: 'Empty media URL' };
+
+  // Check for common video extensions
+  if (/\.(mp4|webm|ogg|mov|m4v|mkv)(\?|$|#)/i.test(m)) {
+    return { valid: true };
+  }
+
+  // Probing: try HEAD request first, then GET if needed
+  let contentType = '';
+  let isProbablyVideo = false;
+
+  try {
+    const res = await fetch(m, { method: 'HEAD', headers });
+    if (res.ok) {
+      contentType = res.headers.get('content-type') || '';
+      isProbablyVideo = isProbablyVideoContentType(contentType);
+    }
+  } catch {
+    // HEAD failed, try GET
+    try {
+      const res = await fetch(m, { method: 'GET', headers, signal: AbortSignal.timeout(5000) });
+      if (res.ok) {
+        contentType = res.headers.get('content-type') || '';
+        isProbablyVideo = isProbablyVideoContentType(contentType);
+
+        // Drain the body to avoid keeping connection open
+        try {
+          await res.body?.cancel();
+        } catch {
+          // ignore
+        }
+      }
+    } catch (e) {
+      // GET probe failed - URL might be invalid or blocked
+      return {
+        valid: false,
+        reason: `Media URL not accessible (${e?.message || 'failed to fetch'})`,
+        provider,
+      };
+    }
+  }
+
+  if (!isProbablyVideo) {
+    // Determine provider-specific guidance
+    let guidance = '';
+
+    try {
+      const u = new URL(m);
+      const host = u.hostname.replace(/^www\./i, '').toLowerCase();
+
+      if (host.includes('youtube')) {
+        guidance =
+          'YouTube media URLs require specific fetch parameters or cookies for private/age-restricted videos. Try passing --cookie or using the web player URL instead.';
+      } else if (host.includes('vimeo')) {
+        guidance =
+          'Vimeo unlisted/private videos require proper URL normalization or cookies. Try using the embed URL or passing --cookie with a valid session.';
+      } else if (host.includes('loom')) {
+        guidance =
+          'Loom videos typically require a logged-in session. Provide cookies or ensure you have access to the original share link.';
+      } else if (m.includes('pdf') || m.includes('document') || m.includes('image')) {
+        guidance =
+          `The resolved URL points to a ${m.includes('pdf') ? 'PDF' : 'document/image'}, not a video file. This might be a documentation link or thumbnail.`;
+      } else {
+        guidance = 'The resolved URL does not appear to be a direct video file. Check that the URL points to a .mp4, .webm, or similar video format.';
+      }
+    } catch {
+      guidance = 'The resolved URL does not appear to be a video file. Check that the URL points to a video file.';
+    }
+
+    return {
+      valid: false,
+      reason: `Resolved mediaUrl does not look like a video (content-type: ${contentType || 'unknown'})`,
+      provider,
+      url: m,
+      guidance,
+    };
+  }
+
+  return { valid: true };
+}
+
 function cookieFromFileContent(raw) {
   const s = String(raw || '').trim();
   if (!s) return '';
@@ -495,7 +582,7 @@ export function extractAnyJsonUrls(html, keys = []) {
   return '';
 }
 
-async function bestEffortExtract({ url, cookie, referer, userAgent }) {
+async function bestEffortExtract({ url, cookie, referer, userAgent, provider = 'unknown' }) {
   const headers = buildHeaders({ cookie, referer, userAgent });
   let mediaUrlRejectReason = '';
 
@@ -725,6 +812,29 @@ async function bestEffortExtract({ url, cookie, referer, userAgent }) {
     }
   }
 
+  // Provider parity: enhanced media URL validation with actionable error messages.
+  // This provides detailed guidance when media URL extraction fails, especially for private/unlisted videos.
+  if (mediaUrl && mediaUrlRejectReason !== 'mediaUrl not found') {
+    try {
+      const validation = await validateMediaUrl(mediaUrl, { headers, url, provider });
+      if (!validation.valid) {
+        // If we have a detailed guidance message, use it; otherwise fall back to the existing reason
+        if (validation.guidance) {
+          mediaUrlRejectReason = validation.reason;
+          if (mediaUrlRejectReason !== 'mediaUrl not found') {
+            mediaUrlRejectReason += ` ${validation.guidance}`;
+          }
+        } else if (!mediaUrlRejectReason.includes('content-type')) {
+          // If no detailed guidance, update with the validation reason
+          mediaUrlRejectReason = validation.reason;
+        }
+      }
+    } catch (e) {
+      // Validation failed but we already have a reason - keep the existing one
+      // This prevents blocking media extraction on validation errors
+    }
+  }
+
   return {
     title,
     text,
@@ -859,7 +969,14 @@ export async function extractFromUrl(rawUrl, options = {}) {
       }
     }
 
-    const ex = await bestEffortExtract({ url: fetchUrl, cookie, referer, userAgent });
+    // Detect provider for enhanced media URL validation
+    let provider = 'unknown';
+    if (isYoutubeUrl(url) || isYoutubeClipUrl(url)) provider = 'YouTube';
+    else if (isVimeoUrl(url)) provider = 'Vimeo';
+    else if (isLoomUrl(url)) provider = 'Loom';
+    else if (isFathomUrl(url)) provider = 'Fathom';
+
+    const ex = await bestEffortExtract({ url: fetchUrl, cookie, referer, userAgent, provider });
     result.ok = true;
     result.title = ex.title || '';
     result.text = ex.text || '';
